@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InnoCart — Touchscreen Kiosk Display & AI Styling Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand:     #1A1AFF;
+    --brand-dim: #1010CC;
+    --cyan:      #00F5FF;
+    --cyan-dim:  #00C4CC;
+    --violet:    #7C4DFF;
+    --amber:     #FFB300;
+    --green:     #00E676;
+    --red:       #FF3B30;
+    --bg:        #0D0D0D;
+    --surface:   #1C1C1E;
+    --surface2:  #242428;
+    --surface3:  #2E2E34;
+    --border:    rgba(0,245,255,0.12);
+    --border2:   rgba(255,255,255,0.07);
+    --text:      #FFFFFF;
+    --text2:     #A0A0B0;
+    --text3:     #606070;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: #080810;
+    font-family: 'Exo 2', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+    gap: 40px;
+  }
+
+  /* PAGE HEADER */
+  .page-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .page-header .logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--cyan), var(--brand));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .page-header .sub { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; }
+
+  /* SCREEN NAV */
+  .screen-nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .screen-nav button {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 8px 18px;
+    border-radius: 40px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .screen-nav button:hover, .screen-nav button.active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+  }
+
+  /* DEVICE SHELL */
+  .device-frame {
+    width: 800px;
+    height: 480px;
+    background: var(--bg);
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    box-shadow: 0 0 0 6px #1a1a1f, 0 0 0 8px #252530, 0 0 60px rgba(0,245,255,0.08), 0 40px 80px rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen { display: none; width: 100%; height: 100%; flex-direction: column; position: absolute; inset: 0; }
+  .screen.active { display: flex; }
+
+  /* TOPBAR */
+  .topbar {
+    height: 44px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 3px; background: linear-gradient(135deg, var(--cyan), var(--brand)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .topbar-divider { width: 1px; height: 16px; background: var(--border2); }
+  .cart-id { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .user-chip { display: flex; align-items: center; gap: 8px; background: var(--surface3); border: 1px solid rgba(0,245,255,0.2); border-radius: 20px; padding: 3px 12px 3px 6px; }
+  .user-avatar { width: 22px; height: 22px; border-radius: 50%; background: #C8A882; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #000; }
+  .user-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .time-display { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text3); }
+
+  /* SCREEN 2 - SHOPPING BILL */
+  #s-shopping .screen-body { flex: 1; display: flex; overflow: hidden; }
+  .bill-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border2); overflow: hidden; }
+  .bill-header { padding: 12px 20px; background: var(--surface2); border-bottom: 1px solid var(--border2); display: flex; align-items: center; justify-content: space-between; }
+  .bill-title { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; }
+  .bill-count { background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
+
+  .bill-items { flex: 1; overflow-y: auto; }
+  .bill-item { display: flex; align-items: center; gap: 14px; padding: 12px 20px; border-bottom: 1px solid var(--border2); }
+  .item-color-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .item-meta { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .item-price { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); }
+  .item-remove { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,59,48,0.15); border: 1px solid rgba(255,59,48,0.3); color: var(--red); font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+  .bill-footer { padding: 12px 20px; background: var(--surface2); border-top: 1px solid var(--border2); }
+  .bill-total-row { display: flex; align-items: center; justify-content: space-between; }
+  .bill-total-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 1px; }
+  .bill-total-amount { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; color: var(--cyan); }
+
+  .action-panel { width: 220px; background: var(--surface); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .rfid-status { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+  .rfid-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .rfid-text { font-size: 11px; font-weight: 600; color: var(--text2); }
+  .rfid-sub { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+  .ai-btn {
+    background: linear-gradient(135deg, var(--violet), #5533CC);
+    border: 1px solid rgba(124,77,255,0.4);
+    border-radius: 12px;
+    padding: 14px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .ai-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(124,77,255,0.3); }
+
+  .checkout-btn {
+    background: linear-gradient(135deg, var(--brand), #0000CC);
+    border: 1px solid rgba(0,245,255,0.3);
+    border-radius: 12px;
+    padding: 14px 12px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+    margin-top: auto;
+    width: 100%;
+  }
+
+  /* SCREEN 3 - DYNAMIC AI STYLING */
+  #s-ai .screen-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px;
+    gap: 14px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(124,77,255,0.15) 0%, transparent 60%), var(--bg);
+  }
+  .ai-header { display: flex; align-items: center; justify-content: space-between; }
+  .ai-title-group { display: flex; align-items: center; gap: 10px; }
+  .ai-badge { background: linear-gradient(135deg, var(--violet), #5533CC); border-radius: 6px; padding: 4px 10px; font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #fff; }
+  .ai-title { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); }
+
+  .ai-tab-bar { display: flex; gap: 8px; }
+  .ai-tab-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ai-tab-btn.active { background: var(--violet); border-color: var(--violet); color: #fff; box-shadow: 0 0 15px rgba(124,77,255,0.4); }
+
+  .ai-cards { display: flex; gap: 12px; flex: 1; }
+  .ai-card {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-card-rank { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--green); font-weight: 700; }
+  .ai-card-item { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 4px; }
+  .ai-card-detail { font-size: 11px; color: var(--text2); line-height: 1.4; flex: 1; margin-top: 4px; }
+  .ai-card-price { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; color: var(--cyan); margin-top: 6px; }
+  .btn-add-rec {
+    background: linear-gradient(135deg, var(--cyan), var(--brand));
+    color: #000;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .screen-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text3); text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo">INNOCART</div>
+  <div class="sub">7" Touchscreen Kiosk Display & AI Styling companion</div>
+</div>
+
+<div class="screen-nav">
+  <button class="active" onclick="showScreen('s-shopping', this)">Screen 2 — Live Shopping Bill</button>
+  <button onclick="showScreen('s-ai', this)">Screen 3 — AI Style Engine</button>
+</div>
+
+<div class="device-frame">
+  <!-- SCREEN 2: LIVE BILL -->
+  <div class="screen active" id="s-shopping">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">INNOCART</div>
+        <div class="topbar-divider"></div>
+        <div class="cart-id">CART • IC-042</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar">H</div>
+          <div class="user-name">Hehe</div>
+        </div>
+        <div class="time-display">10:35 PM</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <div class="bill-panel">
+        <div class="bill-header">
+          <div class="bill-title">Live Bill</div>
+          <div class="bill-count" id="live-bill-count">1 item</div>
+        </div>
+        <div class="bill-items" id="live-bill-items">
+          <div class="bill-item">
+            <div class="item-color-dot" style="background:#00F5FF"></div>
+            <div class="item-info">
+              <div class="item-name">Men's Slim Kurta — Blue</div>
+              <div class="item-meta">EPC: E280110C · SIZE M · ZUDIO</div>
+            </div>
+            <div class="item-price">₹799</div>
+            <div class="item-remove" onclick="removeMockItem(this)">✕</div>
+          </div>
+        </div>
+        <div class="bill-footer">
+          <div class="bill-total-row">
+            <div>
+              <div class="bill-total-label">SUBTOTAL (<span id="item-sub-count">1</span> ITEMS)</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'Space Mono',monospace">Tax included</div>
+            </div>
+            <div class="bill-total-amount" id="bill-total-val">₹799</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-panel">
+        <div class="rfid-status">
+          <div class="rfid-dot"></div>
+          <div>
+            <div class="rfid-text">UHF RFID Active</div>
+            <div class="rfid-sub">IMPINJ E710 · 865MHz</div>
+          </div>
+        </div>
+
+        <button class="ai-btn" onclick="openAiStylingScreen()">
+          <div style="font-size:20px">✨</div>
+          <div style="text-align:left">
+            <div style="font-size:13px;font-weight:700;color:#fff;font-family:'Rajdhani'">GO WITH AI STYLING</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.6)">Get personalised outfit suggestions</div>
+          </div>
+        </button>
+
+        <button class="checkout-btn" onclick="alert('Checkout Initiated for IC-042')">CHECKOUT →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: AI STYLING ENGINE -->
+  <div class="screen" id="s-ai">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">INNOCART</div>
+        <div class="topbar-divider"></div>
+        <div class="cart-id">AI STYLE ENGINE</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" style="background:#C8A882">H</div>
+          <div class="user-name">Hehe (Warm-Golden)</div>
+        </div>
+        <div class="time-display">10:35 PM</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <div class="ai-header">
+        <div class="ai-title-group">
+          <div class="ai-badge">✨ 5-STAGE AI</div>
+          <div class="ai-title">Personalized Style Companion</div>
+        </div>
+        <button class="screen-nav" style="padding:0" onclick="showScreen('s-shopping', document.querySelector('.screen-nav button'))">
+          <span style="font-size:11px;color:var(--cyan);cursor:pointer;font-family:'Space Mono'">← Back to Live Bill</span>
+        </button>
+      </div>
+
+      <!-- AI TAB SWITCHER -->
+      <div class="ai-tab-bar">
+        <button class="ai-tab-btn active" id="tab-outfit" onclick="switchAiTab('outfit')">👖 COMPLEMENTARY OUTFIT</button>
+        <button class="ai-tab-btn" id="tab-footwear" onclick="switchAiTab('footwear')">👟 FOOTWEAR</button>
+        <button class="ai-tab-btn" id="tab-accessories" onclick="switchAiTab('accessories')">🎩 ACCESSORIES</button>
+      </div>
+
+      <!-- DYNAMIC CARDS CONTAINER -->
+      <div class="ai-cards" id="ai-dynamic-cards">
+        <div style="color:var(--text2);font-size:12px;font-family:'Space Mono';margin:auto;">Loading AI recommendations for session IC-042...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen-label" id="screen-label">Screen 2 — Live Shopping Bill</div>
+
+<script>
+let currentAiData = null;
+let currentTab = 'outfit';
+
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  
+  if (id === 's-ai') {
+    fetchAiStylingBackend();
+  }
+}
+
+function openAiStylingScreen() {
+  showScreen('s-ai', document.querySelectorAll('.screen-nav button')[1]);
+}
+
+async function fetchAiStylingBackend() {
+  const container = document.getElementById("ai-dynamic-cards");
+  container.innerHTML = `<div style="color:var(--text2);font-size:12px;font-family:'Space Mono';margin:auto;">Fetching GET /api/cart/IC-042/ai_styling...</div>`;
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/cart/IC-042/ai_styling?facial_hex=%23C8A882&user_style=Streetwear`);
+    if (res.ok) {
+      currentAiData = await res.json();
+      renderAiTabCards();
+    } else {
+      renderFallbackCards();
+    }
+  } catch (err) {
+    renderFallbackCards();
+  }
+}
+
+function switchAiTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.ai-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  renderAiTabCards();
+}
+
+function renderAiTabCards() {
+  const container = document.getElementById("ai-dynamic-cards");
+  container.innerHTML = "";
+
+  let list = [];
+  if (currentAiData) {
+    if (currentTab === 'footwear') list = currentAiData.recommended_footwear || [];
+    else if (currentTab === 'accessories') list = currentAiData.recommended_accessories || [];
+    else list = (currentAiData.recommended_bottomwear && currentAiData.recommended_bottomwear.length > 0) ? currentAiData.recommended_bottomwear : (currentAiData.recommended_topwear || []);
+  }
+
+  if (list.length === 0) {
+    renderFallbackCards();
+    return;
+  }
+
+  list.slice(0, 3).forEach((item, idx) => {
+    const card = document.createElement("div");
+    card.className = "ai-card";
+    card.innerHTML = `
+      <div class="ai-card-rank">#${item.rank || idx + 1} MATCH</div>
+      <div class="ai-card-item">${item.name}</div>
+      <div class="ai-card-detail">${item.match_reason}</div>
+      <div class="ai-card-price">₹${(item.price || 0).toLocaleString('en-IN')}</div>
+      <button class="btn-add-rec" onclick="addRecommendedSku('${item.recommended_sku || item.sku}')">➕ ADD TO CART</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderFallbackCards() {
+  const container = document.getElementById("ai-dynamic-cards");
+  container.innerHTML = `
+    <div class="ai-card">
+      <div class="ai-card-rank">#1 MATCH (94%)</div>
+      <div class="ai-card-item">Chino Trousers — Khaki</div>
+      <div class="ai-card-detail">Khaki makes a striking complement to your blue topwear. Flattering against warm golden skin.</div>
+      <div class="ai-card-price">₹1,199</div>
+      <button class="btn-add-rec" onclick="alert('Added Chino Trousers to Cart!')">➕ ADD TO CART</button>
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-rank">#2 MATCH (88%)</div>
+      <div class="ai-card-item">Matte Black Slim Joggers</div>
+      <div class="ai-card-detail">Fits your Streetwear aesthetic and pairs cleanly with blue kurta.</div>
+      <div class="ai-card-price">₹1,599</div>
+      <button class="btn-add-rec" onclick="alert('Added Joggers to Cart!')">➕ ADD TO CART</button>
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-rank">#3 MATCH (85%)</div>
+      <div class="ai-card-item">Cargo Shorts — Olive Green</div>
+      <div class="ai-card-detail">Workable casual match for warm undertone.</div>
+      <div class="ai-card-price">₹899</div>
+      <button class="btn-add-rec" onclick="alert('Added Cargo Shorts to Cart!')">➕ ADD TO CART</button>
+    </div>`;
+}
+
+function addRecommendedSku(sku) {
+  fetch(`http://127.0.0.1:8000/api/cart/scan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ session_id: "IC-042", epc_id: `SKU-PAIR-${sku}` })
+  }).then(() => alert(`✓ SKU ${sku} added to Cart IC-042!`));
+}
+</script>
+</body>
+</html>

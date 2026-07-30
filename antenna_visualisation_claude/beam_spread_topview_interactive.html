@@ -1,0 +1,139 @@
+
+<style>
+@media (prefers-reduced-motion: no-preference) {
+  .rf-pulse { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.15} 50%{opacity:0.45} }
+}
+</style>
+<h2 class="sr-only">Interactive top-view beam spread analysis for InnoCart V2 — adjust height slider to see 106° beam coverage at each level inside the 38×32 cm cart</h2>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13px;color:var(--color-text-secondary)">
+  <span style="white-space:nowrap">Height above floor</span>
+  <input type="range" min="1" max="52" value="14" step="1" id="hSlider" style="flex:1">
+  <span id="hVal" style="font-size:14px;font-weight:500;min-width:52px;text-align:right;color:var(--color-text-primary)">14 cm</span>
+</div>
+
+<svg width="100%" viewBox="0 0 680 460" role="img">
+  <title>Top-view beam spread from floor antenna ANT3</title>
+  <desc>Shows how the 106-degree beam from the floor antenna expands as height increases inside the 38x32cm cart</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <clipPath id="cartClip"><rect x="160" y="60" width="285" height="219"/></clipPath>
+  </defs>
+
+  <text class="th" x="302" y="30" text-anchor="middle">Top view — ANT3 beam spread (38 × 32 cm cart)</text>
+  <text class="ts" x="302" y="46" text-anchor="middle" style="fill:var(--color-text-secondary)">Beam expands at 2 × h × tan(53°) = 2.654 × h</text>
+
+  <!-- Cart outline (38cm wide, 32cm deep, scaled: 1cm = 7.5px) -->
+  <!-- Width 38cm = 285px, Depth 32cm = 240px, cart at x=160,y=60 -->
+  <rect x="160" y="60" width="285" height="240" rx="4" fill="none" stroke="var(--color-border-primary)" stroke-width="2"/>
+
+  <!-- Dimension arrows -->
+  <line x1="160" y1="318" x2="445" y2="318" stroke="var(--color-text-tertiary)" stroke-width="0.5" marker-end="url(#arr)" marker-start="url(#arr)"/>
+  <text class="ts" x="302" y="332" text-anchor="middle" style="fill:var(--color-text-secondary)">38 cm (length)</text>
+  <line x1="454" y1="60" x2="454" y2="300" stroke="var(--color-text-tertiary)" stroke-width="0.5" marker-end="url(#arr)" marker-start="url(#arr)"/>
+  <text class="ts" x="466" y="185" style="fill:var(--color-text-secondary)">32 cm</text>
+
+  <!-- Wall antennas (ANT1 left, ANT2 right) -->
+  <rect x="152" y="163" width="10" height="18" rx="2" fill="#185FA5" opacity="0.8"/>
+  <text class="ts" x="148" y="172" text-anchor="end" style="fill:#185FA5">ANT1</text>
+  <rect x="445" y="163" width="10" height="18" rx="2" fill="#185FA5" opacity="0.8"/>
+  <text class="ts" x="459" y="172" style="fill:#185FA5">ANT2</text>
+
+  <!-- Front wall antenna ANT4 -->
+  <rect x="289" y="52" width="24" height="10" rx="2" fill="#3B6D11" opacity="0.8"/>
+  <text class="ts" x="301" y="48" text-anchor="middle" style="fill:#3B6D11">ANT4</text>
+
+  <!-- ANT1 beam (horizontal left→right across 38cm depth, full width) -->
+  <g clip-path="url(#cartClip)">
+    <polygon id="ant1beam" points="" fill="#378ADD" opacity="0.10"/>
+    <polygon id="ant2beam" points="" fill="#378ADD" opacity="0.10"/>
+    <polygon id="ant4beam" points="" fill="#3B6D11" opacity="0.10"/>
+    <!-- ANT3 beam circle -->
+    <circle id="ant3beam" cx="302" cy="180" r="0" fill="#BA7517" opacity="0.18" class="rf-pulse"/>
+  </g>
+
+  <!-- ANT3 floor antenna -->
+  <rect x="280" y="166" width="44" height="28" rx="4" fill="#BA7517" stroke="#854F0B" stroke-width="1"/>
+  <text class="ts" x="302" y="177" text-anchor="middle" style="fill:#633806">ANT3</text>
+  <text class="ts" x="302" y="188" text-anchor="middle" style="fill:#633806">floor</text>
+
+  <!-- Coverage readout box -->
+  <rect x="40" y="60" width="110" height="120" rx="6" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+  <text class="th" x="95" y="82" text-anchor="middle" style="fill:var(--color-text-primary)">ANT3 spread</text>
+  <text class="ts" x="55" y="104" style="fill:var(--color-text-secondary)">Diameter</text>
+  <text class="th" x="145" y="104" text-anchor="end" id="spreadVal" style="fill:#BA7517">— cm</text>
+  <text class="ts" x="55" y="122" style="fill:var(--color-text-secondary)">Width (32)</text>
+  <text class="th" x="145" y="122" text-anchor="end" id="widthStatus" style="fill:var(--color-text-secondary)">—</text>
+  <text class="ts" x="55" y="140" style="fill:var(--color-text-secondary)">Length (38)</text>
+  <text class="th" x="145" y="140" text-anchor="end" id="lenStatus" style="fill:var(--color-text-secondary)">—</text>
+  <text class="ts" x="55" y="158" style="fill:var(--color-text-secondary)">Coverage</text>
+  <text class="th" x="145" y="158" text-anchor="end" id="coverPct" style="fill:var(--color-text-secondary)">—</text>
+
+  <!-- Legend -->
+  <rect x="40" y="360" width="12" height="10" rx="2" fill="#BA7517" opacity="0.5"/>
+  <text class="ts" x="58" y="370" style="fill:var(--color-text-secondary)">ANT3 beam (floor)</text>
+  <rect x="40" y="378" width="12" height="10" rx="2" fill="#378ADD" opacity="0.5"/>
+  <text class="ts" x="58" y="388" style="fill:var(--color-text-secondary)">ANT1/ANT2 beam (walls)</text>
+  <rect x="40" y="396" width="12" height="10" rx="2" fill="#3B6D11" opacity="0.5"/>
+  <text class="ts" x="58" y="406" style="fill:var(--color-text-secondary)">ANT4 beam (front)</text>
+
+  <!-- Faraday wall indicator -->
+  <text class="ts" x="302" y="420" text-anchor="middle" style="fill:var(--color-text-tertiary)">Aluminium shielding reflects beam back — beam saturates entire cavity above critical height</text>
+  <text class="ts" x="302" y="438" text-anchor="middle" style="fill:var(--color-text-tertiary)">Critical height for full 38cm coverage: 14.3 cm</text>
+</svg>
+
+<script>
+const TAN53 = Math.tan(53 * Math.PI / 180);
+const SCALE = 7.5;
+const CX = 302, CY = 180;
+const CART_X = 160, CART_Y = 60, CART_W = 285, CART_H = 240;
+
+function update() {
+  const h = parseInt(document.getElementById('hSlider').value);
+  document.getElementById('hVal').textContent = h + ' cm';
+
+  const spread = 2 * h * TAN53;
+  const spreadPx = spread * SCALE;
+  const r = spreadPx / 2;
+
+  document.getElementById('spreadVal').textContent = spread.toFixed(1) + ' cm';
+
+  const coversW = spread >= 32;
+  const coversL = spread >= 38;
+  document.getElementById('widthStatus').textContent = coversW ? '✓ covered' : (spread.toFixed(1) + ' cm');
+  document.getElementById('widthStatus').setAttribute('style', 'fill:' + (coversW ? '#27500A' : '#A32D2D'));
+  document.getElementById('lenStatus').textContent = coversL ? '✓ covered' : (spread.toFixed(1) + ' cm');
+  document.getElementById('lenStatus').setAttribute('style', 'fill:' + (coversL ? '#27500A' : '#A32D2D'));
+
+  const cartArea = 38 * 32;
+  const circleArea = Math.PI * (spread/2) * (spread/2);
+  const pct = Math.min(100, Math.round(circleArea / cartArea * 100));
+  document.getElementById('coverPct').textContent = pct + '%';
+  document.getElementById('coverPct').setAttribute('style', 'fill:' + (pct >= 100 ? '#27500A' : '#BA7517'));
+
+  document.getElementById('ant3beam').setAttribute('r', Math.min(r, 160));
+  document.getElementById('ant3beam').setAttribute('cx', CX);
+  document.getElementById('ant3beam').setAttribute('cy', CY);
+
+  const ant1Spread = 2 * h * TAN53 * SCALE / 2;
+  const ant1x = CART_X + 10;
+  const ant1y = CY;
+  const ant1Points = `${ant1x},${ant1y} ${CART_X+CART_W},${ant1y - Math.min(ant1Spread, 160)} ${CART_X+CART_W},${ant1y + Math.min(ant1Spread, 160)}`;
+  document.getElementById('ant1beam').setAttribute('points', ant1Points);
+
+  const ant2x = CART_X + CART_W - 10;
+  const ant2Points = `${ant2x},${ant1y} ${CART_X},${ant1y - Math.min(ant1Spread, 160)} ${CART_X},${ant1y + Math.min(ant1Spread, 160)}`;
+  document.getElementById('ant2beam').setAttribute('points', ant2Points);
+
+  const ant4Spread = 2 * h * TAN53 * SCALE / 2;
+  const ant4y = CART_Y + 10;
+  const ant4Points = `${CX},${ant4y} ${CX - Math.min(ant4Spread, 160)},${CART_Y+CART_H} ${CX + Math.min(ant4Spread, 160)},${CART_Y+CART_H}`;
+  document.getElementById('ant4beam').setAttribute('points', ant4Points);
+}
+
+document.getElementById('hSlider').addEventListener('input', update);
+update();
+</script>

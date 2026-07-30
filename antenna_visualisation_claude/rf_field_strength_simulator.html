@@ -1,0 +1,244 @@
+
+<style>
+@media (prefers-reduced-motion: no-preference) {
+  .pulse { animation: rfpulse 2s ease-in-out infinite; }
+  @keyframes rfpulse { 0%,100%{opacity:0.18} 50%{opacity:0.36} }
+}
+</style>
+<h2 class="sr-only">Interactive RF field strength simulator for InnoCart antenna placement</h2>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">height probe</div>
+    <div id="h-val" style="font-size:22px;font-weight:500;color:var(--color-text-primary)">26 cm</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">beam spread</div>
+    <div id="spread-val" style="font-size:22px;font-weight:500;color:var(--color-text-primary)">69 cm</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">coverage</div>
+    <div id="cov-val" style="font-size:22px;font-weight:500;color:var(--color-text-primary)">Full</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">active ants</div>
+    <div id="ant-val" style="font-size:22px;font-weight:500;color:var(--color-text-primary)">4</div>
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+  <span style="font-size:13px;color:var(--color-text-secondary);min-width:80px">Height probe</span>
+  <input type="range" id="h-slider" min="0" max="52" value="26" step="1" style="flex:1">
+  <span style="font-size:13px;color:var(--color-text-secondary);min-width:48px" id="h-label">26 cm</span>
+</div>
+
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+  <button id="btn-all" onclick="setAnts([1,1,1,1])" style="font-size:12px">All 4 antennas</button>
+  <button id="btn-floor" onclick="setAnts([0,0,1,0])" style="font-size:12px">Floor only (ANT3)</button>
+  <button id="btn-walls" onclick="setAnts([1,1,0,0])" style="font-size:12px">Walls only (ANT1+2)</button>
+  <button id="btn-nofar" onclick="setFaraday(false)" style="font-size:12px">No shielding</button>
+  <button id="btn-far" onclick="setFaraday(true)" style="font-size:12px">With Faraday</button>
+</div>
+
+<svg id="sim-svg" width="100%" viewBox="0 0 680 440">
+  <defs>
+    <marker id="sarrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <clipPath id="simclip"><rect x="160" y="30" width="304" height="352"/></clipPath>
+  </defs>
+
+  <!-- Cart body: 38cm × 52cm, 8px/cm, x=160..464, y=30..382 -->
+  <rect x="160" y="30" width="304" height="352" fill="#E6F1FB" opacity="0.2" rx="2"/>
+
+  <!-- Faraday wall fill (togglable) -->
+  <rect id="far-left"  x="156" y="30" width="8" height="352" fill="#888780" opacity="0.35"/>
+  <rect id="far-right" x="460" y="30" width="8" height="352" fill="#888780" opacity="0.35"/>
+  <rect id="far-bot"   x="156" y="378" width="316" height="8" fill="#888780" opacity="0.35"/>
+  <rect id="far-front" x="156" y="22" width="316" height="8" fill="#888780" opacity="0.35"/>
+
+  <!-- Field zones (drawn by JS) -->
+  <g id="field-zones"></g>
+
+  <!-- Probe line -->
+  <line id="probe-line" x1="160" y1="174" x2="464" y2="174" stroke="#E24B4A" stroke-width="1" stroke-dasharray="4 3" opacity="0.8"/>
+
+  <!-- Antenna bodies -->
+  <!-- ANT1 left wall, H=26cm (y=382-208=174) -->
+  <g id="ant1-g">
+    <rect x="147" y="162" width="16" height="24" rx="3" fill="#185FA5" opacity="0.9"/>
+    <text class="ts" x="163" y="177" dominant-baseline="central" style="fill:#185FA5"> ANT1</text>
+  </g>
+  <!-- ANT2 right wall -->
+  <g id="ant2-g">
+    <rect x="461" y="162" width="16" height="24" rx="3" fill="#185FA5" opacity="0.9"/>
+    <text class="ts" x="455" y="177" text-anchor="end" dominant-baseline="central" style="fill:#185FA5">ANT2 </text>
+  </g>
+  <!-- ANT3 floor centre -->
+  <g id="ant3-g">
+    <rect x="297" y="382" width="30" height="14" rx="7" fill="#BA7517" opacity="0.9"/>
+    <text class="ts" x="312" y="392" text-anchor="middle" dominant-baseline="central" style="fill:#BA7517">ANT3</text>
+  </g>
+  <!-- ANT4 front -->
+  <g id="ant4-g">
+    <rect x="297" y="18" width="30" height="14" rx="7" fill="#3B6D11" opacity="0.9"/>
+    <text class="ts" x="312" y="28" text-anchor="middle" dominant-baseline="central" style="fill:#3B6D11">ANT4</text>
+  </g>
+
+  <!-- Cart outline -->
+  <rect x="160" y="30" width="304" height="352" fill="none" stroke="var(--t)" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Spread indicator line (drawn by JS) -->
+  <line id="spread-line" x1="160" y1="174" x2="464" y2="174" stroke="#E24B4A" stroke-width="2" opacity="0"/>
+  <circle id="spread-left" cx="160" cy="174" r="4" fill="#E24B4A" opacity="0"/>
+  <circle id="spread-right" cx="464" cy="174" r="4" fill="#E24B4A" opacity="0"/>
+
+  <!-- Scale labels -->
+  <text class="ts" x="140" y="34" text-anchor="end">52 cm</text>
+  <text class="ts" x="140" y="386" text-anchor="end">0 cm</text>
+  <text class="ts" x="140" y="210" text-anchor="end">26 cm</text>
+  <line x1="156" y1="210" x2="162" y2="210" stroke="var(--t)" stroke-width="0.5" opacity="0.4"/>
+  <text class="ts" x="312" y="420" text-anchor="middle">38 cm width</text>
+</svg>
+
+<div id="insight" style="margin-top:12px;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-secondary);line-height:1.6">
+  Drag the height slider to probe field intensity at any level inside the cart.
+</div>
+
+<script>
+const TAN53 = Math.tan(53 * Math.PI / 180);
+const CART_W = 38, CART_H = 52;
+const SVG_W = 304, SVG_H = 352;
+const X0 = 160, Y_TOP = 30, Y_BOT = 382;
+const PX = SVG_W / CART_W;
+const PY = SVG_H / CART_H;
+
+let ants = [1,1,1,1];
+let faraday = true;
+let probe_h = 26;
+
+function cmToSvgY(h) { return Y_BOT - h * PY; }
+function cmToSvgX(w) { return X0 + w * PX; }
+
+function setAnts(a) { ants = a; render(); }
+function setFaraday(v) {
+  faraday = v;
+  ['far-left','far-right','far-bot','far-front'].forEach(id => {
+    document.getElementById(id).setAttribute('opacity', v ? '0.35' : '0');
+  });
+  render();
+}
+
+function fieldAt(x_cm, h_cm) {
+  let intensity = 0;
+  const ant_h = 26;
+  if (ants[0]) {
+    const dy = Math.abs(h_cm - ant_h);
+    const dx = x_cm;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (angle <= 53) { const d = Math.sqrt(dx*dx + dy*dy); intensity += Math.max(0, 1 - d/60); }
+  }
+  if (ants[1]) {
+    const dy = Math.abs(h_cm - ant_h);
+    const dx = CART_W - x_cm;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (angle <= 53) { const d = Math.sqrt(dx*dx + dy*dy); intensity += Math.max(0, 1 - d/60); }
+  }
+  if (ants[2]) {
+    const dy = h_cm;
+    const dx_l = x_cm - CART_W/2;
+    const angle = Math.atan2(Math.abs(dx_l), dy) * 180 / Math.PI;
+    if (angle <= 53 && dy > 0) { const d = Math.sqrt(dx_l*dx_l + dy*dy); intensity += Math.max(0, 1 - d/70); }
+  }
+  if (ants[3]) {
+    const dy = Math.abs(h_cm - ant_h);
+    const dx_front = x_cm - CART_W/2;
+    const d = Math.sqrt(dx_front*dx_front + dy*dy);
+    intensity += Math.max(0, 0.6 - d/80);
+  }
+  if (faraday) intensity = Math.min(1, intensity * 1.4 + 0.15);
+  return Math.min(1, Math.max(0, intensity));
+}
+
+function render() {
+  const h = probe_h;
+  const spread_cm = 2 * h * TAN53;
+  const spread_clamped = Math.min(spread_cm, CART_W);
+  const covered = spread_cm >= CART_W;
+
+  document.getElementById('h-val').textContent = h + ' cm';
+  document.getElementById('spread-val').textContent = Math.round(spread_cm) + ' cm';
+  document.getElementById('cov-val').textContent = covered ? 'Full ✓' : Math.round((spread_cm/CART_W)*100) + '%';
+  document.getElementById('ant-val').textContent = ants.filter(a=>a).length;
+  document.getElementById('h-label').textContent = h + ' cm';
+
+  const svgY = cmToSvgY(h);
+  document.getElementById('probe-line').setAttribute('y1', svgY);
+  document.getElementById('probe-line').setAttribute('y2', svgY);
+
+  const activeCount = ants.filter(a=>a).length;
+  const insights = [];
+  const floorSpread = 2 * h * TAN53;
+  if (h < 14.3 && !ants[0] && !ants[1]) insights.push('Dead zone risk — wall ants at H=26cm cover this level only via Faraday bounce.');
+  else if (h < 14.3) insights.push('Floor near-field zone. ANT1+ANT2 beams extend to H=−24cm so wall coverage exists. ANT3 direct beam fills above 14.3cm.');
+  else if (floorSpread >= CART_W) insights.push('ANT3 floor beam fully covers 38cm width at this height (spread=' + Math.round(floorSpread) + 'cm). ANT1+ANT2 provide full height coverage simultaneously.');
+  else insights.push('ANT3 beam spread ' + Math.round(floorSpread) + 'cm — partial floor coverage. Wall antennas provide primary coverage at this level.');
+  if (faraday) insights.push('Faraday shielding active: reflected energy adds ~1.4× effective field strength across cavity.');
+  document.getElementById('insight').textContent = insights.join(' ');
+
+  const zones = document.getElementById('field-zones');
+  zones.innerHTML = '';
+  const cols = 20, rows = 26;
+  for (let row = 0; row <= rows; row++) {
+    for (let col = 0; col <= cols; col++) {
+      const x_cm = (col / cols) * CART_W;
+      const h_cm = (1 - row / rows) * CART_H;
+      const f = fieldAt(x_cm, h_cm);
+      if (f < 0.05) continue;
+      const svgX = cmToSvgX(x_cm);
+      const svgYc = cmToSvgY(h_cm);
+      const cellW = SVG_W / cols;
+      const cellH = SVG_H / rows;
+      const r = Math.round(f * 55 + 49);
+      const g = Math.round((1-f) * 120 + 80);
+      const b = Math.round((1-f) * 200 + 30);
+      const op = f * 0.55;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x', svgX - cellW/2);
+      rect.setAttribute('y', svgYc - cellH/2);
+      rect.setAttribute('width', cellW + 1);
+      rect.setAttribute('height', cellH + 1);
+      rect.setAttribute('fill', `rgb(${r},${g},${b})`);
+      rect.setAttribute('opacity', op);
+      rect.setAttribute('clip-path', 'url(#simclip)');
+      zones.appendChild(rect);
+    }
+  }
+
+  const spread_half_cm = Math.min(spread_cm / 2, CART_W / 2);
+  const sl_x1 = cmToSvgX(CART_W/2 - spread_half_cm);
+  const sl_x2 = cmToSvgX(CART_W/2 + spread_half_cm);
+  document.getElementById('spread-line').setAttribute('x1', sl_x1);
+  document.getElementById('spread-line').setAttribute('x2', sl_x2);
+  document.getElementById('spread-line').setAttribute('y1', svgY);
+  document.getElementById('spread-line').setAttribute('y2', svgY);
+  document.getElementById('spread-line').setAttribute('opacity', '0.7');
+  document.getElementById('spread-left').setAttribute('cx', sl_x1);
+  document.getElementById('spread-left').setAttribute('cy', svgY);
+  document.getElementById('spread-left').setAttribute('opacity', '0.9');
+  document.getElementById('spread-right').setAttribute('cx', sl_x2);
+  document.getElementById('spread-right').setAttribute('cy', svgY);
+  document.getElementById('spread-right').setAttribute('opacity', '0.9');
+
+  ['ant1-g','ant2-g','ant3-g','ant4-g'].forEach((id,i) => {
+    document.getElementById(id).style.opacity = ants[i] ? '1' : '0.2';
+  });
+}
+
+document.getElementById('h-slider').addEventListener('input', e => {
+  probe_h = parseInt(e.target.value);
+  render();
+});
+
+render();
+</script>

@@ -1,0 +1,51 @@
+services:
+  # 1. FastAPI Backend Web Service
+  - type: web
+    name: innocart-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: Dockerfile
+    region: singapore
+    plan: free
+    envVars:
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        value: 3306
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_DB
+        value: smart_cart
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: 6379
+      - key: JWT_SECRET
+        generateValue: true
+      - key: USE_MOCK_PAYMENTS
+        value: true
+
+  # 2. React + Vite Frontend Static Site
+  - type: web
+    name: innocart-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    region: singapore
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_BACKEND_URL
+        fromService:
+          type: web
+          name: innocart-backend
+          property: host
+      - key: VITE_WS_URL
+        fromService:
+          type: web
+          name: innocart-backend
+          property: host

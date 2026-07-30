@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<!-- saved from url=(0065)file:///C:/Users/MANI%20TEJA/Downloads/innocart_simulator_10.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Innocart · Hardware Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./Innocart · Hardware Simulator1_files/css2" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#060810;--bg1:#0C0F18;--bg2:#111520;--bg3:#171C2A;--bg4:#1D2335;
+  --b1:#1E2638;--b2:#28334A;--b3:#344060;
+  --txt:#D8E4FF;--txt2:#8B9DC3;--txt3:#4A587A;--txt4:#2A3550;
+  --blue:#4D8BFF;--blue2:#2563EB;--blue3:#1A3F99;
+  --cyan:#00D4FF;--cyan2:#0099CC;
+  --green:#00FF88;--green2:#00CC6A;
+  --orange:#FF9500;--red:#FF3B5C;
+  --purple:#B44DFF;--purple2:#8A2BE2;
+  --yellow:#FFD600;--pink:#FF6EAF;
+  --f-head:'Outfit',sans-serif;
+  --f-mono:'IBM Plex Mono',monospace;
+  --f-tech:'Share Tech Mono',monospace;
+  --r:8px;--r2:14px;
+}
+html{font-size:13px}
+body{
+  background:var(--bg0);color:var(--txt);font-family:var(--f-head);
+  height:100vh;overflow:hidden;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(77,139,255,.07),transparent);
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.02) 2px,rgba(0,0,0,.02) 4px);
+}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-rows:52px 1fr;grid-template-columns:270px 1fr 370px;height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{
+  grid-column:1/-1;background:var(--bg1);border-bottom:1px solid var(--b2);
+  display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;
+}
+.logo{
+  font-family:var(--f-head);font-weight:800;font-size:20px;letter-spacing:-1px;
+  background:linear-gradient(135deg,#fff,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-sub{
+  font-family:var(--f-tech);font-size:9px;color:var(--txt3);letter-spacing:2px;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--b2);border-radius:4px;
+}
+.sep{flex:1}
+.srv-group{display:flex;gap:7px;align-items:center}
+.srv-pill{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
+  background:var(--bg2);border:1px solid var(--b1);cursor:pointer;transition:all .2s;
+  font-family:var(--f-tech);font-size:10px;color:var(--txt3);
+}
+.srv-pill:hover{border-color:var(--b3)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:all .4s;background:var(--txt3)}
+.dot.on {background:var(--green);box-shadow:0 0 7px var(--green)}
+.dot.off{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot.chk{background:var(--orange);animation:pulse-dot 1s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+.cfg-btn{
+  background:var(--bg2);border:1px solid var(--b2);color:var(--txt2);font-family:var(--f-tech);
+  font-size:10px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s;
+}
+.cfg-btn:hover{border-color:var(--blue);color:var(--blue)}
+.phase-tag{
+  font-family:var(--f-tech);font-size:9px;padding:3px 9px;border-radius:4px;
+  background:rgba(0,255,136,.07);color:var(--green);border:1px solid rgba(0,255,136,.2);
+  animation:pulse-glow 2.5s infinite;
+}
+@keyframes pulse-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 10px rgba(0,255,136,.2)}}
+
+/* ── LEFT PANEL — SHELF ── */
+.panel-left{background:var(--bg1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+.p-hdr{padding:12px 14px 9px;border-bottom:1px solid var(--b1)}
+.p-title-sm{font-family:var(--f-tech);font-size:9px;letter-spacing:2px;color:var(--txt3);text-transform:uppercase;margin-bottom:2px}
+.p-title{font-family:var(--f-head);font-weight:700;font-size:14px}
+.p-sub{font-size:11px;color:var(--txt3);margin-top:2px}
+
+.filter-bar{display:flex;padding:7px 10px;gap:4px;border-bottom:1px solid var(--b1);background:var(--bg0)}
+.fb{
+  flex:1;padding:5px 3px;font-family:var(--f-tech);font-size:9px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;text-align:center;border-radius:5px;
+  cursor:pointer;border:1px solid transparent;color:var(--txt3);background:transparent;transition:all .2s;
+}
+.fb:hover{color:var(--txt2);border-color:var(--b2)}
+.fb.act{background:var(--bg3);border-color:var(--b3);color:var(--txt)}
+.fb.act.s{color:var(--cyan);border-color:rgba(0,212,255,.3)}
+.fb.act.e{color:var(--orange);border-color:rgba(255,149,0,.3)}
+.fb.act.m{color:var(--purple);border-color:rgba(180,77,255,.3)}
+
+.shelf{flex:1;overflow-y:auto;padding:7px}
+.shelf::-webkit-scrollbar{width:3px}
+.shelf::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+.zone-label{
+  font-family:var(--f-tech);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:7px 7px 3px;color:var(--txt3);display:flex;align-items:center;gap:6px;
+}
+.zone-label::after{content:'';flex:1;height:1px;background:var(--b1)}
+
+.sitem{
+  display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);
+  border:1px solid var(--b1);background:var(--bg2);cursor:pointer;transition:all .15s;
+  margin-bottom:4px;
+}
+.sitem:hover{border-color:var(--b3);background:var(--bg3);transform:translateX(3px)}
+.sitem:active{transform:scale(.97)}
+.sitem.flash{animation:rfid-flash .5s ease}
+@keyframes rfid-flash{
+  0%{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,.3)}
+  60%{background:rgba(0,212,255,.05)}
+  100%{border-color:var(--b1);box-shadow:none}
+}
+.si-icon{font-size:18px;flex-shrink:0;width:26px;text-align:center}
+.si-info{flex:1;min-width:0}
+.si-name{font-size:11px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-meta{font-family:var(--f-tech);font-size:9px;color:var(--txt3);margin-top:1px}
+.si-epc{
+  font-family:var(--f-tech);font-size:8px;padding:2px 5px;border-radius:3px;
+  background:var(--bg1);border:1px solid var(--b1);color:var(--txt3);flex-shrink:0;
+}
+
+/* ── CENTER — LCD ── */
+.panel-center{background:var(--bg0);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.panel-center::before{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.022;
+  background-image:linear-gradient(var(--b2) 1px,transparent 1px),
+    linear-gradient(90deg,var(--b2) 1px,transparent 1px);
+  background-size:30px 30px;
+}
+.scan-bar{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  transform:scaleX(0);transform-origin:left;transition:transform .3s;z-index:10;
+}
+.scan-bar.go{transform:scaleX(1)}
+.scan-pulse{
+  position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  background:var(--bg1);border:1px solid var(--cyan);border-radius:20px;
+  padding:4px 12px;font-family:var(--f-tech);font-size:10px;color:var(--cyan);
+  display:none;align-items:center;gap:6px;z-index:20;
+  box-shadow:0 0 18px rgba(0,212,255,.2);animation:fadeup .2s ease;
+}
+.scan-pulse.show{display:flex}
+@keyframes fadeup{from{opacity:0;transform:translate(-50%,4px)}to{opacity:1;transform:translate(-50%,0)}}
+.spin-ring{
+  width:8px;height:8px;border:1.5px solid rgba(0,212,255,.25);
+  border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.screen-wrap{flex:1;padding:12px;display:flex;flex-direction:column}
+
+/* LCD */
+.lcd{
+  flex:1;background:var(--bg1);border-radius:var(--r2);border:1px solid var(--b2);
+  overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 0 0 3px var(--bg0),0 0 0 4px var(--b1),0 8px 40px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.025);
+}
+.lcd-hdr{
+  padding:11px 14px;background:linear-gradient(180deg,var(--bg3),var(--bg2));
+  border-bottom:1px solid var(--b2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.lcd-dots{display:flex;gap:5px;margin-right:9px}
+.lcd-dot{width:8px;height:8px;border-radius:50%}
+.lcd-dot:nth-child(1){background:#FF5F57}
+.lcd-dot:nth-child(2){background:#FEBC2E}
+.lcd-dot:nth-child(3){background:#28C840}
+.lcd-left{display:flex;align-items:center}
+.cart-chip{
+  font-family:var(--f-tech);font-size:11px;color:var(--cyan);
+  background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);padding:3px 9px;border-radius:5px;
+}
+.lcd-right{text-align:right}
+.total-lbl{font-family:var(--f-tech);font-size:9px;color:var(--txt3);letter-spacing:1px;text-transform:uppercase}
+.total-val{
+  font-family:var(--f-head);font-weight:800;font-size:25px;letter-spacing:-1px;color:var(--txt);transition:all .3s;
+}
+.total-val.tick{animation:tick-up .4s ease}
+@keyframes tick-up{0%{transform:translateY(-4px);opacity:.5}100%{transform:none;opacity:1}}
+.count-val{font-family:var(--f-tech);font-size:9px;color:var(--txt3)}
+
+.lcd-body{flex:1;overflow-y:auto;padding:9px 11px;display:flex;flex-direction:column;gap:6px}
+.lcd-body::-webkit-scrollbar{width:4px}
+.lcd-body::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+.empty-state{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:9px;color:var(--txt3);font-family:var(--f-tech);font-size:11px;text-align:center;padding:30px;
+}
+.empty-icon{font-size:52px;opacity:.1;filter:grayscale(1)}
+.empty-hint{font-size:10px;color:var(--txt4);margin-top:4px;line-height:1.7}
+
+.citem{
+  display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r);
+  background:var(--bg2);border:1px solid var(--b1);animation:ci-in .3s ease;
+}
+.citem.new-item{border-color:var(--cyan);animation:ci-in .3s ease,new-glow 1.5s ease}
+@keyframes ci-in{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+@keyframes new-glow{0%{box-shadow:0 0 0 2px rgba(0,212,255,.3)}100%{box-shadow:none}}
+.citem.removing{animation:ci-out .3s ease forwards}
+@keyframes ci-out{to{opacity:0;transform:translateX(12px);height:0;padding:0;margin:0;border-width:0}}
+.ci-emoji{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+.ci-info{flex:1;min-width:0}
+.ci-name{font-size:11px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-epc{font-family:var(--f-tech);font-size:9px;color:var(--txt3);margin-top:1px}
+.qty-ctrl{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.qbtn{
+  width:21px;height:21px;border-radius:5px;border:1px solid var(--b2);background:var(--bg1);
+  color:var(--txt2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-weight:500;
+}
+.qbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.07)}
+.qty-num{font-family:var(--f-tech);font-size:12px;font-weight:700;color:var(--txt);min-width:14px;text-align:center}
+.ci-price{font-family:var(--f-tech);font-size:11px;font-weight:700;color:var(--txt);min-width:60px;text-align:right;flex-shrink:0}
+.ci-del{
+  width:21px;height:21px;border-radius:5px;border:1px solid transparent;background:transparent;
+  color:var(--txt3);cursor:pointer;font-size:11px;transition:all .15s;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.ci-del:hover{border-color:var(--red);color:var(--red);background:rgba(255,59,92,.07)}
+
+.lcd-foot{padding:9px 11px;border-top:1px solid var(--b1);background:var(--bg2);display:flex;gap:7px;flex-shrink:0}
+.foot-btn{
+  flex:1;padding:9px;border-radius:var(--r);font-family:var(--f-head);font-size:11px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;cursor:pointer;transition:all .2s;border:none;
+}
+.btn-clear{background:var(--bg3);border:1px solid var(--b2);color:var(--txt2)}
+.btn-clear:hover{border-color:var(--red);color:var(--red)}
+.btn-checkout{
+  flex:2;background:linear-gradient(135deg,var(--blue2),var(--blue3));color:#fff;
+  box-shadow:0 2px 14px rgba(37,99,235,.3);
+}
+.btn-checkout:hover:not(:disabled){box-shadow:0 4px 20px rgba(37,99,235,.5);transform:translateY(-1px)}
+.btn-checkout:disabled{opacity:.3;cursor:not-allowed}
+
+/* ── RIGHT PANEL ── */
+.panel-right{background:var(--bg1);border-left:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+
+/* Session + hex row */
+.config-row{padding:9px 13px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:8px}
+.row-lbl{font-family:var(--f-tech);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;white-space:nowrap}
+.row-input{
+  flex:1;background:var(--bg2);border:1px solid var(--b1);border-radius:6px;padding:5px 9px;
+  font-family:var(--f-tech);font-size:11px;color:var(--txt);outline:none;transition:border-color .2s;min-width:0;
+}
+.row-input:focus{border-color:var(--blue)}
+
+/* Hex swatch */
+.hex-swatch{
+  width:26px;height:26px;border-radius:5px;border:1px solid var(--b2);flex-shrink:0;
+  cursor:pointer;overflow:hidden;position:relative;
+}
+.hex-swatch input[type=color]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;
+}
+.hex-preview{width:100%;height:100%;pointer-events:none}
+
+/* Undertone chip */
+.undertone-chip{
+  font-family:var(--f-tech);font-size:9px;padding:3px 8px;border-radius:12px;
+  border:1px solid var(--b2);color:var(--txt3);background:var(--bg2);flex-shrink:0;
+  transition:all .3s;white-space:nowrap;
+}
+.undertone-chip.resolved{color:var(--pink);border-color:rgba(255,110,175,.3);background:rgba(255,110,175,.07)}
+
+/* Style selector */
+.style-row{padding:7px 13px;border-bottom:1px solid var(--b1);display:flex;gap:6px;align-items:center}
+.style-lbl{font-family:var(--f-tech);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;flex-shrink:0}
+.ai-sel{
+  flex:1;background:var(--bg2);border:1px solid var(--b1);border-radius:6px;padding:5px 8px;
+  font-family:var(--f-tech);font-size:10px;color:var(--txt);outline:none;cursor:pointer;appearance:none;
+}
+.ai-sel:focus{border-color:var(--purple)}
+
+/* Style Me section */
+.style-panel{padding:10px 13px;border-bottom:1px solid var(--b1)}
+.style-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.style-title{
+  font-family:var(--f-tech);font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--purple);display:flex;align-items:center;gap:5px;
+}
+.spark{display:inline-block;animation:spark 2s infinite}
+@keyframes spark{0%,100%{transform:scale(1)}50%{transform:scale(1.25) rotate(15deg)}}
+
+/* Cart item picker */
+.picker-section{margin-bottom:8px}
+.picker-lbl{font-family:var(--f-tech);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.picker-items{display:flex;flex-direction:column;gap:3px;max-height:90px;overflow-y:auto}
+.picker-items::-webkit-scrollbar{width:3px}
+.picker-items::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.picker-item{
+  display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:6px;
+  border:1px solid var(--b1);background:var(--bg2);cursor:pointer;transition:all .15s;
+}
+.picker-item:hover{border-color:var(--b3);background:var(--bg3)}
+.picker-item.selected{border-color:var(--purple);background:rgba(180,77,255,.08)}
+.pi-emoji{font-size:14px;flex-shrink:0}
+.pi-info{flex:1;min-width:0}
+.pi-name{font-size:10px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-meta{font-family:var(--f-tech);font-size:8px;color:var(--txt3)}
+.pi-cat{
+  font-family:var(--f-tech);font-size:8px;padding:1px 5px;border-radius:3px;flex-shrink:0;
+}
+.pi-cat.top{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+.pi-cat.bot{background:rgba(255,149,0,.1);color:var(--orange);border:1px solid rgba(255,149,0,.2)}
+.empty-picker{font-family:var(--f-tech);font-size:10px;color:var(--txt3);text-align:center;padding:10px;
+  border:1px dashed var(--b2);border-radius:6px}
+
+/* Action buttons */
+.ai-actions{display:flex;gap:6px;margin-top:6px}
+.ai-btn{
+  flex:1;padding:8px 6px;border-radius:var(--r);font-family:var(--f-head);font-size:10px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;cursor:pointer;transition:all .2s;border:none;
+  position:relative;overflow:hidden;
+}
+.btn-outfit{
+  background:rgba(180,77,255,.09);border:1px solid rgba(180,77,255,.3);color:var(--purple);
+}
+.btn-outfit:hover:not(:disabled){border-color:var(--purple);box-shadow:0 0 14px rgba(180,77,255,.2)}
+.btn-footwear{
+  background:rgba(255,110,175,.07);border:1px solid rgba(255,110,175,.3);color:var(--pink);
+}
+.btn-footwear:hover:not(:disabled){border-color:var(--pink);box-shadow:0 0 14px rgba(255,110,175,.2)}
+.ai-btn:disabled{opacity:.28;cursor:not-allowed}
+.ai-btn.loading::after{
+  content:'';display:inline-block;width:8px;height:8px;
+  border:1.5px solid rgba(255,255,255,.2);border-top-color:currentColor;
+  border-radius:50%;animation:spin .7s linear infinite;margin-left:7px;vertical-align:middle;
+}
+
+/* Suggestions */
+.sugs{display:none;flex-direction:column;gap:4px;padding:9px 13px;border-bottom:1px solid var(--b1);
+  background:rgba(180,77,255,.015);max-height:200px;overflow-y:auto}
+.sugs.show{display:flex}
+.sugs::-webkit-scrollbar{width:3px}
+.sugs::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.sug-mode-lbl{
+  font-family:var(--f-tech);font-size:9px;color:var(--txt3);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:3px;display:flex;align-items:center;gap:6px;
+}
+.sug-mode-badge{
+  font-size:9px;padding:1px 7px;border-radius:3px;font-family:var(--f-tech);
+}
+.sug-mode-badge.outfit{background:rgba(180,77,255,.12);color:var(--purple);border:1px solid rgba(180,77,255,.2)}
+.sug-mode-badge.footwear{background:rgba(255,110,175,.1);color:var(--pink);border:1px solid rgba(255,110,175,.2)}
+.sug-undertone{
+  font-family:var(--f-tech);font-size:9px;padding:3px 8px;border-radius:10px;
+  background:rgba(255,110,175,.07);border:1px solid rgba(255,110,175,.2);color:var(--pink);
+  margin-bottom:6px;text-align:center;
+}
+.sug-card{
+  padding:7px 10px;border-radius:var(--r);border:1px solid var(--b2);background:var(--bg2);
+  display:flex;gap:8px;align-items:flex-start;animation:fade-up .35s ease both;
+}
+@keyframes fade-up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.sug-rank{
+  font-family:var(--f-tech);font-size:9px;font-weight:700;color:var(--purple);
+  background:rgba(180,77,255,.1);border:1px solid rgba(180,77,255,.2);
+  padding:2px 5px;border-radius:3px;flex-shrink:0;
+}
+.sug-info{flex:1;min-width:0}
+.sug-name{font-size:10px;font-weight:600;color:var(--txt);line-height:1.3}
+.sug-reason{font-size:10px;color:var(--txt3);margin-top:2px;line-height:1.4}
+.sug-price{font-family:var(--f-tech);font-size:9px;color:var(--txt3);margin-top:2px}
+.sug-scores{display:flex;gap:4px;align-items:center;flex-shrink:0;flex-direction:column}
+.sug-total{font-family:var(--f-tech);font-size:11px;color:var(--green);font-weight:700}
+.sug-face{font-family:var(--f-tech);font-size:9px;color:var(--pink)}
+
+/* Console */
+.log-hdr{padding:7px 13px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.log-title{font-family:var(--f-tech);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.log-live{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.log-clr{
+  font-family:var(--f-tech);font-size:9px;background:none;border:1px solid var(--b1);
+  color:var(--txt3);padding:2px 7px;border-radius:4px;cursor:pointer;transition:all .15s;
+}
+.log-clr:hover{border-color:var(--b2);color:var(--txt2)}
+.console{
+  flex:1;overflow-y:auto;padding:6px 11px;font-family:var(--f-tech);font-size:10px;
+  line-height:1.85;display:flex;flex-direction:column;gap:0;
+}
+.console::-webkit-scrollbar{width:3px}
+.console::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.lg{display:flex;gap:6px;align-items:baseline;animation:log-in .12s ease}
+@keyframes log-in{from{opacity:0}to{opacity:1}}
+.lt{font-size:9px;color:var(--txt3);flex-shrink:0}
+.li{flex-shrink:0;width:11px}
+.lm{flex:1;word-break:break-all}
+.lg.info .lm{color:var(--txt2)}
+.lg.ok   .lm{color:var(--green)}
+.lg.err  .lm{color:var(--red)}
+.lg.warn .lm{color:var(--orange)}
+.lg.ai   .lm{color:var(--purple)}
+.lg.face .lm{color:var(--pink)}
+.lg.scan .lm{color:var(--cyan)}
+.lg.mega .lm{color:var(--yellow)}
+.lg.sep  .lm{color:var(--b3)}
+
+/* ── MODALS ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(6px);
+  z-index:1000;display:none;align-items:center;justify-content:center;
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1px solid var(--b3);border-radius:var(--r2);padding:26px;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);max-width:440px;width:100%;
+}
+.m-title{font-family:var(--f-head);font-weight:800;font-size:17px;color:var(--txt);margin-bottom:3px}
+.m-sub{font-size:11px;color:var(--txt3);margin-bottom:20px;line-height:1.6}
+.m-field{margin-bottom:12px}
+.m-lbl{font-family:var(--f-tech);font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--txt3);display:block;margin-bottom:5px}
+.m-inp{
+  width:100%;background:var(--bg1);border:1px solid var(--b2);border-radius:7px;padding:8px 12px;
+  font-family:var(--f-tech);font-size:12px;color:var(--txt);outline:none;transition:border-color .2s;
+}
+.m-inp:focus{border-color:var(--blue)}
+.m-status{font-family:var(--f-tech);font-size:11px;text-align:center;padding:6px;border-radius:6px;margin-top:9px;display:none}
+.m-status.ok  {display:block;background:rgba(0,255,136,.07);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.m-status.fail{display:block;background:rgba(255,59,92,.07);color:var(--red);border:1px solid rgba(255,59,92,.2)}
+.m-actions{display:flex;gap:7px;margin-top:20px}
+.m-btn{
+  flex:1;padding:9px;border-radius:var(--r);font-family:var(--f-head);font-size:11px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;transition:all .2s;border:none;
+}
+.m-cancel{background:var(--bg3);border:1px solid var(--b2);color:var(--txt2)}
+.m-test{flex:.6;background:transparent;border:1px solid var(--green);color:var(--green);font-size:10px}
+.m-test:hover{background:rgba(0,255,136,.07)}
+.m-save{background:linear-gradient(135deg,var(--blue2),var(--blue3));color:#fff}
+.m-save:hover{box-shadow:0 4px 14px rgba(37,99,235,.4)}
+
+/* Checkout */
+.co-modal{
+  background:var(--bg2);border:1px solid var(--b3);border-radius:var(--r2);padding:28px;
+  max-width:400px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,.7);
+}
+.co-title{font-family:var(--f-head);font-weight:800;font-size:19px;text-align:center;margin-bottom:18px}
+.co-items{margin-bottom:14px}
+.co-line{
+  display:flex;justify-content:space-between;padding:6px 0;
+  border-bottom:1px solid var(--b1);font-size:11px;color:var(--txt2);
+}
+.co-total{
+  display:flex;justify-content:space-between;padding:12px 0 0;border-top:2px solid var(--blue2);
+  font-family:var(--f-head);font-size:19px;font-weight:800;
+}
+.co-qr{
+  background:var(--bg1);border:1px solid var(--b2);border-radius:var(--r);padding:14px;
+  text-align:center;margin:14px 0;font-family:var(--f-tech);font-size:10px;color:var(--txt3);
+}
+.qr-box{width:88px;height:88px;background:#fff;border-radius:7px;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px}
+.co-close{
+  width:100%;padding:11px;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--green2),#009944);border:none;color:#fff;
+  font-family:var(--f-head);font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;transition:all .2s;
+}
+.co-close:hover{box-shadow:0 4px 18px rgba(0,255,136,.25)}
+
+/* Toasts */
+.toasts{position:fixed;top:60px;right:14px;z-index:2000;display:flex;flex-direction:column;gap:6px}
+.toast{
+  padding:8px 13px;border-radius:var(--r);font-family:var(--f-tech);font-size:10px;border:1px solid;
+  animation:t-in .25s ease,t-out .3s ease 2.7s forwards;max-width:270px;background:var(--bg2);
+  box-shadow:0 4px 18px rgba(0,0,0,.4);
+}
+.toast.ok {border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+.toast.inf{border-color:var(--blue);color:var(--blue)}
+.toast.wrn{border-color:var(--orange);color:var(--orange)}
+@keyframes t-in {from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes t-out{from{opacity:1}to{opacity:0;transform:translateX(12px)}}
+</style>
+</head>
+<body>
+
+<!-- TOASTS -->
+<div class="toasts" id="toasts"></div>
+
+<!-- CONFIG MODAL -->
+<div class="overlay" id="cfgOverlay">
+  <div class="modal">
+    <div class="m-title">Server Configuration</div>
+    <div class="m-sub">Both Flask servers must be running with CORS enabled.<br>
+      <code style="color:var(--cyan);font-family:var(--f-tech);font-size:10px">pip install flask-cors</code> then add <code style="color:var(--cyan);font-family:var(--f-tech);font-size:10px">CORS(flask_app)</code></div>
+    <div class="m-field">
+      <label class="m-lbl">Cart Handler URL — port 5001</label>
+      <input class="m-inp" id="cfgCart" value="http://127.0.0.1:5001">
+    </div>
+    <div class="m-field">
+      <label class="m-lbl">Styling Engine URL — port 5000</label>
+      <input class="m-inp" id="cfgStyle" value="http://127.0.0.1:5000">
+    </div>
+    <div id="mStatus" class="m-status"></div>
+    <div class="m-actions">
+      <button class="m-btn m-cancel" onclick="closeCfg()">Cancel</button>
+      <button class="m-btn m-test" onclick="testServers()">Test</button>
+      <button class="m-btn m-save" onclick="saveCfg()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="overlay" id="coOverlay">
+  <div class="co-modal">
+    <div class="co-title">🛒 Checkout Summary</div>
+    <div class="co-items" id="coItems"></div>
+    <div class="co-total"><span>Total</span><span id="coTotal">₹0</span></div>
+    <div class="co-qr">
+      <div>Scan to pay with any UPI app</div>
+      <div class="qr-box">📱</div>
+      <div style="color:var(--txt2);font-size:12px;margin-top:3px">innocart@upi</div>
+      <div style="margin-top:5px;font-size:9px">Phase 5 — payment gateway integration pending</div>
+    </div>
+    <button class="co-close" onclick="closeCheckout()">✓ Simulate Payment &amp; Unlock Cart</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">INNO<span style="background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent">CART</span></div>
+    <div class="logo-sub">Hardware Simulator</div>
+    <div class="phase-tag" style="margin-left:4px">● Phase 3 Active</div>
+    <div class="sep"></div>
+    <div class="srv-group">
+      <div class="srv-pill" onclick="openCfg()"><div class="dot off" id="dotCart"></div><span id="lblCart">cart:5001</span></div>
+      <div class="srv-pill" onclick="openCfg()"><div class="dot off" id="dotStyle"></div><span id="lblStyle">style:5000</span></div>
+    </div>
+    <button class="cfg-btn" onclick="openCfg()">⚙ Config</button>
+  </header>
+
+  <!-- LEFT — SHELF -->
+  <aside class="panel-left">
+    <div class="p-hdr">
+      <div class="p-title-sm">Impinj E710 · UHF RFID Reader</div>
+      <div class="p-title">Simulated Shelf</div>
+      <div class="p-sub">Click item → Arduino detects tag</div>
+    </div>
+    <div class="filter-bar">
+      <button class="fb act" id="fb-all" onclick="setFilter(&#39;all&#39;,this)">All</button>
+      <button class="fb s" id="fb-sw" onclick="setFilter(&#39;Streetwear&#39;,this)">Street</button>
+      <button class="fb e" id="fb-et" onclick="setFilter(&#39;Ethnic&#39;,this)">Ethnic</button>
+      <button class="fb m" id="fb-mn" onclick="setFilter(&#39;Minimalist&#39;,this)">Minimal</button>
+    </div>
+    <div class="shelf" id="shelf"><div class="zone-label">Streetwear — Zone A</div><div class="sitem" id="si-HD-BLK-OVR">
+        <div class="si-icon">🖤</div>
+        <div class="si-info">
+          <div class="si-name">Void Black Oversized Hoodie</div>
+          <div class="si-meta">₹2,499 · Hoodie</div>
+        </div>
+        <div class="si-epc" id="epc-HD-BLK-OVR">E100001</div></div><div class="sitem" id="si-JGR-BLK-SLM">
+        <div class="si-icon">🩱</div>
+        <div class="si-info">
+          <div class="si-name">Matte Black Slim Joggers</div>
+          <div class="si-meta">₹1,599 · Joggers</div>
+        </div>
+        <div class="si-epc" id="epc-JGR-BLK-SLM">E100004</div></div><div class="sitem" id="si-JGR-CHR-SLM">
+        <div class="si-icon">👖</div>
+        <div class="si-info">
+          <div class="si-name">Charcoal Tech Joggers</div>
+          <div class="si-meta">₹1,699 · Joggers</div>
+        </div>
+        <div class="si-epc" id="epc-JGR-CHR-SLM">E100007</div></div><div class="sitem" id="si-CGO-OLV-TCT">
+        <div class="si-icon">🪖</div>
+        <div class="si-info">
+          <div class="si-name">Tactical Olive Cargo Pants</div>
+          <div class="si-meta">₹1,999 · Cargo Pants</div>
+        </div>
+        <div class="si-epc" id="epc-CGO-OLV-TCT">E100010</div></div><div class="sitem" id="si-TS-WHT-OVR">
+        <div class="si-icon">👕</div>
+        <div class="si-info">
+          <div class="si-name">Clean Canvas Oversized Tee</div>
+          <div class="si-meta">₹899 · Oversized T-Shirt</div>
+        </div>
+        <div class="si-epc" id="epc-TS-WHT-OVR">E100013</div></div><div class="sitem" id="si-HD-GRY-GFX">
+        <div class="si-icon">🎨</div>
+        <div class="si-info">
+          <div class="si-name">Ash Graphic Hoodie</div>
+          <div class="si-meta">₹2,199 · Graphic Hoodie</div>
+        </div>
+        <div class="si-epc" id="epc-HD-GRY-GFX">E100016</div></div><div class="sitem" id="si-SNK-WHT-CRT">
+        <div class="si-icon">👟</div>
+        <div class="si-info">
+          <div class="si-name">Triple White Court Sneakers</div>
+          <div class="si-meta">₹3,499 · Sneakers</div>
+        </div>
+        <div class="si-epc" id="epc-SNK-WHT-CRT">E100019</div></div><div class="sitem" id="si-SNK-BLK-RNR">
+        <div class="si-icon">👟</div>
+        <div class="si-info">
+          <div class="si-name">Stealth Black Runner Sneakers</div>
+          <div class="si-meta">₹3,299 · Sneakers</div>
+        </div>
+        <div class="si-epc" id="epc-SNK-BLK-RNR">E100022</div></div><div class="zone-label">Ethnic — Zone B</div><div class="sitem" id="si-KRT-MRN-LNN">
+        <div class="si-icon">🫱</div>
+        <div class="si-info">
+          <div class="si-name">Ember Maroon Linen Kurta</div>
+          <div class="si-meta">₹1,799 · Kurta</div>
+        </div>
+        <div class="si-epc" id="epc-KRT-MRN-LNN">E200001</div></div><div class="sitem" id="si-KRT-IVR-CTN">
+        <div class="si-icon">👘</div>
+        <div class="si-info">
+          <div class="si-name">Ivory Cotton Kurta</div>
+          <div class="si-meta">₹1,599 · Kurta</div>
+        </div>
+        <div class="si-epc" id="epc-KRT-IVR-CTN">E200004</div></div><div class="sitem" id="si-CHN-BGE-SLM">
+        <div class="si-icon">👖</div>
+        <div class="si-info">
+          <div class="si-name">Sand Beige Slim Chinos</div>
+          <div class="si-meta">₹1,499 · Chinos</div>
+        </div>
+        <div class="si-epc" id="epc-CHN-BGE-SLM">E200007</div></div><div class="sitem" id="si-PJM-WHT-ETH">
+        <div class="si-icon">🩳</div>
+        <div class="si-info">
+          <div class="si-name">Crisp White Ethnic Pajama</div>
+          <div class="si-meta">₹799 · Pajama</div>
+        </div>
+        <div class="si-epc" id="epc-PJM-WHT-ETH">E200010</div></div><div class="sitem" id="si-SND-TAN-KLP">
+        <div class="si-icon">🥿</div>
+        <div class="si-info">
+          <div class="si-name">Artisan Tan Kolhapuri Sandals</div>
+          <div class="si-meta">₹1,299 · Ethnic Sandals</div>
+        </div>
+        <div class="si-epc" id="epc-SND-TAN-KLP">E200013</div></div><div class="zone-label">Minimalist — Zone C</div><div class="sitem" id="si-TS-NVY-CRW">
+        <div class="si-icon">👔</div>
+        <div class="si-info">
+          <div class="si-name">Essential Navy Crew Tee</div>
+          <div class="si-meta">₹799 · T-Shirt</div>
+        </div>
+        <div class="si-epc" id="epc-TS-NVY-CRW">E300001</div></div><div class="sitem" id="si-TS-WHT-PMA">
+        <div class="si-icon">👕</div>
+        <div class="si-info">
+          <div class="si-name">Classic White Pima Tee</div>
+          <div class="si-meta">₹699 · T-Shirt</div>
+        </div>
+        <div class="si-epc" id="epc-TS-WHT-PMA">E300004</div></div><div class="sitem" id="si-SHT-BLK-DRP">
+        <div class="si-icon">👔</div>
+        <div class="si-info">
+          <div class="si-name">Drop-Shoulder Black Shirt</div>
+          <div class="si-meta">₹1,399 · Oversized Shirt</div>
+        </div>
+        <div class="si-epc" id="epc-SHT-BLK-DRP">E300007</div></div><div class="sitem" id="si-JNS-BLK-SLM">
+        <div class="si-icon">👖</div>
+        <div class="si-info">
+          <div class="si-name">Washed Black Slim Jeans</div>
+          <div class="si-meta">₹1,999 · Jeans</div>
+        </div>
+        <div class="si-epc" id="epc-JNS-BLK-SLM">E300010</div></div><div class="sitem" id="si-JNS-NVY-RAW">
+        <div class="si-icon">👖</div>
+        <div class="si-info">
+          <div class="si-name">Raw Indigo Slim Jeans</div>
+          <div class="si-meta">₹1,999 · Jeans</div>
+        </div>
+        <div class="si-epc" id="epc-JNS-NVY-RAW">E300013</div></div><div class="sitem" id="si-SHT-WHT-LNN">
+        <div class="si-icon">🩲</div>
+        <div class="si-info">
+          <div class="si-name">Minimalist White Linen Shorts</div>
+          <div class="si-meta">₹999 · Shorts</div>
+        </div>
+        <div class="si-epc" id="epc-SHT-WHT-LNN">E300016</div></div><div class="sitem" id="si-CHN-OLV-SLM">
+        <div class="si-icon">👖</div>
+        <div class="si-info">
+          <div class="si-name">Field Olive Slim Chinos</div>
+          <div class="si-meta">₹1,499 · Chinos</div>
+        </div>
+        <div class="si-epc" id="epc-CHN-OLV-SLM">E300019</div></div></div>
+  </aside>
+
+  <!-- CENTER — 7" LCD -->
+  <main class="panel-center">
+    <div class="scan-bar" id="scanBar"></div>
+    <div class="scan-pulse" id="scanPulse"><div class="spin-ring"></div><span id="pulseText">Processing...</span></div>
+
+    <div class="screen-wrap">
+      <div class="lcd">
+        <div class="lcd-hdr">
+          <div class="lcd-left">
+            <div class="lcd-dots"><div class="lcd-dot"></div><div class="lcd-dot"></div><div class="lcd-dot"></div></div>
+            <div>
+              <div style="font-family:var(--f-tech);font-size:9px;color:var(--txt3);letter-spacing:1px;margin-bottom:2px">7" LCD · ACTIVE CART</div>
+              <div class="cart-chip" id="cartChip">CART-001</div>
+            </div>
+          </div>
+          <div class="lcd-right">
+            <div class="total-lbl">Total</div>
+            <div class="total-val" id="totalVal">₹0</div>
+            <div class="count-val" id="countVal">0 items</div>
+          </div>
+        </div>
+
+        <div class="lcd-body" id="lcdBody">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">🛒</div>
+            <div>Cart is empty</div>
+            <div class="empty-hint">
+              Click any item on the shelf<br>to simulate an RFID tag scan.<br><br>
+              Arduino Mega → NEW_TAG:&lt;EPC&gt;<br>
+              ESP32 → POST /cart/scan
+            </div>
+          </div>
+        </div>
+
+        <div class="lcd-foot">
+          <button class="foot-btn btn-clear" onclick="clearCart()">Clear</button>
+          <button class="foot-btn btn-checkout" id="btnCheckout" onclick="openCheckout()" disabled="">Checkout →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT — AI + LOG -->
+  <aside class="panel-right">
+
+    <!-- Session ID row -->
+    <div class="config-row">
+      <span class="row-lbl">Cart ID</span>
+      <input class="row-input" id="sessId" value="CART-001" oninput="onSessChange()">
+    </div>
+
+    <!-- Facial Hex row -->
+    <div class="config-row" style="border-bottom:none;padding-bottom:4px">
+      <span class="row-lbl">Facial Hex</span>
+      <div class="hex-swatch" id="hexSwatch" title="Click to pick facial colour">
+        <div class="hex-preview" id="hexPreview" style="background:#C8A882"></div>
+        <input type="color" id="hexPicker" value="#C8A882" oninput="onHexChange(this.value)">
+      </div>
+      <input class="row-input" id="hexInput" value="#C8A882" maxlength="7" placeholder="#RRGGBB" oninput="onHexTextChange(this.value)" style="font-size:11px;letter-spacing:1px">
+      <div class="undertone-chip" id="undertoneLbl">—</div>
+    </div>
+    <div style="padding:0 13px 8px;border-bottom:1px solid var(--b1)">
+      <button onclick="classifyHex()" style="
+        width:100%;padding:4px;border-radius:5px;font-family:var(--f-tech);font-size:9px;
+        background:rgba(255,110,175,.06);border:1px solid rgba(255,110,175,.2);
+        color:var(--pink);cursor:pointer;transition:all .2s;letter-spacing:.5px;text-transform:uppercase;
+      ">Classify Hex →</button>
+    </div>
+
+    <!-- Style preference row -->
+    <div class="style-row">
+      <span class="style-lbl">Style</span>
+      <select class="ai-sel" id="selStyle">
+        <option>Streetwear</option><option>Ethnic</option><option>Minimalist</option>
+      </select>
+    </div>
+
+    <!-- Style Me section -->
+    <div class="style-panel">
+      <div class="style-hdr">
+        <div class="style-title"><span class="spark">⚡</span> AI Style Companion</div>
+        <div id="pickerStatus" style="font-family:var(--f-tech);font-size:9px;color:var(--txt3)">Select an item below</div>
+      </div>
+
+      <!-- Topwear picker -->
+      <div class="picker-section">
+        <div class="picker-lbl">Topwear in cart</div>
+        <div class="picker-items" id="pickerTop">
+          <div class="empty-picker">Add topwear to cart first</div>
+        </div>
+      </div>
+
+      <!-- Bottomwear picker -->
+      <div class="picker-section">
+        <div class="picker-lbl">Bottomwear in cart</div>
+        <div class="picker-items" id="pickerBot">
+          <div class="empty-picker">Add bottomwear to cart first</div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="ai-actions">
+        <button class="ai-btn btn-outfit" id="btnOutfit" onclick="callOutfit()" disabled="">✦ Style Me</button>
+        <button class="ai-btn btn-footwear" id="btnFootwear" onclick="callFootwear()" disabled="">👟 Footwear</button>
+      </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="sugs" id="sugsPanel"></div>
+
+    <!-- Console -->
+    <div class="log-hdr">
+      <div class="log-title"><div class="log-live"></div>Serial / HTTP Log</div>
+      <button class="log-clr" onclick="clrLog()">CLR</button>
+    </div>
+    <div class="console" id="console"><div class="lg sep"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">══════════════════════════════════════════</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">Innocart Hardware Simulator  v3.0  (Facial Hex Edition)</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">Cart Handler   →  http://127.0.0.1:5001</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">Style Engine   →  http://127.0.0.1:5000</span></div><div class="lg sep"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">──────────────────────────────────────────</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">① Click shelf items to scan RFID tags</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">② Set facial hex (#RRGGBB) from mobile app</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">③ Pick a top/bottom item in the picker</span></div><div class="lg info"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">④ Tap "Style Me" (outfit) or "Footwear"</span></div><div class="lg face"><span class="lt">14:30:44</span><span class="li">👤</span><span class="lm">Facial hex drives the highest-weight scoring stage (+40 pts)</span></div><div class="lg sep"><span class="lt">14:30:44</span><span class="li">›</span><span class="lm">──────────────────────────────────────────</span></div></div>
+
+  </aside>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+let CFG = { cart:'http://127.0.0.1:5001', style:'http://127.0.0.1:5000' };
+
+// ═══════════════════════════════════════════════════════════
+// PRODUCTS — matches smart_cart_db.sql exactly
+// ═══════════════════════════════════════════════════════════
+const PRODUCTS = [
+  // Streetwear
+  {sku:'HD-BLK-OVR', name:'Void Black Oversized Hoodie',   price:2499,style:'Streetwear',type:'Hoodie',            cat:'Topwear',   color:'Black',   emoji:'🖤',zone:'A-01',epcs:['E100001','E100002','E100003']},
+  {sku:'JGR-BLK-SLM',name:'Matte Black Slim Joggers',      price:1599,style:'Streetwear',type:'Joggers',           cat:'Bottomwear',color:'Black',   emoji:'🩱',zone:'A-02',epcs:['E100004','E100005','E100006']},
+  {sku:'JGR-CHR-SLM',name:'Charcoal Tech Joggers',         price:1699,style:'Streetwear',type:'Joggers',           cat:'Bottomwear',color:'Charcoal',emoji:'👖',zone:'A-02',epcs:['E100007','E100008','E100009']},
+  {sku:'CGO-OLV-TCT',name:'Tactical Olive Cargo Pants',    price:1999,style:'Streetwear',type:'Cargo Pants',       cat:'Bottomwear',color:'Olive',   emoji:'🪖',zone:'A-03',epcs:['E100010','E100011','E100012']},
+  {sku:'TS-WHT-OVR', name:'Clean Canvas Oversized Tee',    price:899, style:'Streetwear',type:'Oversized T-Shirt', cat:'Topwear',   color:'White',   emoji:'👕',zone:'A-04',epcs:['E100013','E100014','E100015']},
+  {sku:'HD-GRY-GFX', name:'Ash Graphic Hoodie',            price:2199,style:'Streetwear',type:'Graphic Hoodie',    cat:'Topwear',   color:'Charcoal',emoji:'🎨',zone:'A-01',epcs:['E100016','E100017','E100018']},
+  {sku:'SNK-WHT-CRT',name:'Triple White Court Sneakers',   price:3499,style:'Streetwear',type:'Sneakers',          cat:'Footwear',  color:'White',   emoji:'👟',zone:'A-05',epcs:['E100019','E100020','E100021']},
+  {sku:'SNK-BLK-RNR',name:'Stealth Black Runner Sneakers', price:3299,style:'Streetwear',type:'Sneakers',          cat:'Footwear',  color:'Black',   emoji:'👟',zone:'A-05',epcs:['E100022','E100023','E100024']},
+  // Ethnic
+  {sku:'KRT-MRN-LNN',name:'Ember Maroon Linen Kurta',      price:1799,style:'Ethnic',type:'Kurta',         cat:'Topwear',   color:'Maroon',emoji:'🫱',zone:'B-01',epcs:['E200001','E200002','E200003']},
+  {sku:'KRT-IVR-CTN',name:'Ivory Cotton Kurta',            price:1599,style:'Ethnic',type:'Kurta',         cat:'Topwear',   color:'Beige', emoji:'👘',zone:'B-01',epcs:['E200004','E200005','E200006']},
+  {sku:'CHN-BGE-SLM',name:'Sand Beige Slim Chinos',        price:1499,style:'Ethnic',type:'Chinos',        cat:'Bottomwear',color:'Beige', emoji:'👖',zone:'B-02',epcs:['E200007','E200008','E200009']},
+  {sku:'PJM-WHT-ETH',name:'Crisp White Ethnic Pajama',     price:799, style:'Ethnic',type:'Pajama',        cat:'Bottomwear',color:'White', emoji:'🩳',zone:'B-02',epcs:['E200010','E200011','E200012']},
+  {sku:'SND-TAN-KLP',name:'Artisan Tan Kolhapuri Sandals', price:1299,style:'Ethnic',type:'Ethnic Sandals',cat:'Footwear',  color:'Beige', emoji:'🥿',zone:'B-03',epcs:['E200013','E200014','E200015']},
+  // Minimalist
+  {sku:'TS-NVY-CRW', name:'Essential Navy Crew Tee',       price:799, style:'Minimalist',type:'T-Shirt',        cat:'Topwear',   color:'Navy', emoji:'👔',zone:'C-01',epcs:['E300001','E300002','E300003']},
+  {sku:'TS-WHT-PMA', name:'Classic White Pima Tee',        price:699, style:'Minimalist',type:'T-Shirt',        cat:'Topwear',   color:'White',emoji:'👕',zone:'C-01',epcs:['E300004','E300005','E300006']},
+  {sku:'SHT-BLK-DRP',name:'Drop-Shoulder Black Shirt',     price:1399,style:'Minimalist',type:'Oversized Shirt',cat:'Topwear',   color:'Black',emoji:'👔',zone:'C-02',epcs:['E300007','E300008','E300009']},
+  {sku:'JNS-BLK-SLM',name:'Washed Black Slim Jeans',       price:1999,style:'Minimalist',type:'Jeans',          cat:'Bottomwear',color:'Black',emoji:'👖',zone:'C-03',epcs:['E300010','E300011','E300012']},
+  {sku:'JNS-NVY-RAW',name:'Raw Indigo Slim Jeans',         price:1999,style:'Minimalist',type:'Jeans',          cat:'Bottomwear',color:'Navy', emoji:'👖',zone:'C-03',epcs:['E300013','E300014','E300015']},
+  {sku:'SHT-WHT-LNN',name:'Minimalist White Linen Shorts', price:999, style:'Minimalist',type:'Shorts',         cat:'Bottomwear',color:'White',emoji:'🩲',zone:'C-04',epcs:['E300016','E300017','E300018']},
+  {sku:'CHN-OLV-SLM',name:'Field Olive Slim Chinos',       price:1499,style:'Minimalist',type:'Chinos',         cat:'Bottomwear',color:'Olive',emoji:'👖',zone:'C-02',epcs:['E300019','E300020','E300021']},
+];
+
+// EPC → product lookup
+const EPC2P = {};
+PRODUCTS.forEach(p => p.epcs.forEach(e => EPC2P[e] = p));
+
+// EPC round-robin cursor per SKU
+const cursors = {};
+PRODUCTS.forEach(p => cursors[p.sku] = 0);
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+const cart = {};      // { sku: { name, price, emoji, qty, cat, epcs[], sessId } }
+let lastEpcForStyle = null;   // last Topwear or Bottomwear EPC scanned
+let selectedPickerSku = null; // sku selected in the picker
+let scanning = false;
+let curFilter = 'all';
+let curHex    = '#C8A882';
+
+// ═══════════════════════════════════════════════════════════
+// SHELF
+// ═══════════════════════════════════════════════════════════
+const ZONE_LBL = {
+  Streetwear:'Streetwear — Zone A',
+  Ethnic:'Ethnic — Zone B',
+  Minimalist:'Minimalist — Zone C',
+};
+
+function buildShelf() {
+  const el = document.getElementById('shelf');
+  el.innerHTML = '';
+  const groups = {};
+  PRODUCTS.forEach(p => {
+    if (curFilter === 'all' || p.style === curFilter)
+      (groups[p.style] = groups[p.style]||[]).push(p);
+  });
+  ['Streetwear','Ethnic','Minimalist'].forEach(style => {
+    if (!groups[style]?.length) return;
+    const zl = document.createElement('div');
+    zl.className = 'zone-label';
+    zl.textContent = ZONE_LBL[style];
+    el.appendChild(zl);
+    groups[style].forEach(p => {
+      const epc = p.epcs[cursors[p.sku] % p.epcs.length];
+      const d   = document.createElement('div');
+      d.className = 'sitem';
+      d.id = `si-${p.sku}`;
+      d.innerHTML = `
+        <div class="si-icon">${p.emoji}</div>
+        <div class="si-info">
+          <div class="si-name">${p.name}</div>
+          <div class="si-meta">₹${p.price.toLocaleString('en-IN')} · ${p.type}</div>
+        </div>
+        <div class="si-epc" id="epc-${p.sku}">${epc}</div>`;
+      d.onclick = () => simulateScan(p);
+      el.appendChild(d);
+    });
+  });
+}
+
+function setFilter(f, btn) {
+  curFilter = f;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('act'));
+  btn.classList.add('act');
+  buildShelf();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIMULATE RFID SCAN → POST /cart/scan
+// ═══════════════════════════════════════════════════════════
+async function simulateScan(prod) {
+  if (scanning) { showToast('Reader busy', 'wrn'); return; }
+  scanning = true;
+
+  const epc = prod.epcs[cursors[prod.sku] % prod.epcs.length];
+  cursors[prod.sku]++;
+
+  // Update EPC badge
+  const nextEpc = prod.epcs[cursors[prod.sku] % prod.epcs.length];
+  const epcEl   = document.getElementById(`epc-${prod.sku}`);
+  if (epcEl) epcEl.textContent = nextEpc;
+
+  // Shelf flash
+  const si = document.getElementById(`si-${prod.sku}`);
+  if (si) { si.classList.add('flash'); setTimeout(() => si.classList.remove('flash'), 500); }
+
+  const sessId = getSess();
+  showPulse(`NEW_TAG:${epc}`);
+  activateBar();
+
+  log('mega', `Arduino Mega  →  NEW_TAG:${epc}`);
+  log('scan', `ESP32 Core 0  →  POST /cart/scan`);
+  log('info', `  { session_id: "${sessId}", epc_id: "${epc}" }`);
+
+  try {
+    const res  = await fetch(`${CFG.cart}/cart/scan`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: sessId, epc_id: epc })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      log('err', `✗ ${res.status} — ${data.message||'Server error'}`);
+      showToast(`Error: ${data.message||res.status}`, 'err');
+    } else if (data.duplicate_scan) {
+      log('warn', `⚠ Duplicate EPC ${epc} — ignored`);
+      showToast('Duplicate scan — ignored', 'wrn');
+    } else {
+      log('ok', `✓ ${data.name}  ×${data.quantity}  total=₹${data.cart_total?.toLocaleString('en-IN')}`);
+      addToCart(data, epc, sessId, prod.cat);
+      setTotals(data.cart_total, data.item_count);
+
+      // Track top/bottom EPCs for the picker
+      if (prod.cat === 'Topwear' || prod.cat === 'Bottomwear') {
+        lastEpcForStyle = epc;
+        refreshPicker();
+      }
+    }
+  } catch {
+    log('err', `✗ Connection failed — is cart_handler.py running?`);
+    showToast('Server unreachable', 'err');
+  }
+
+  hidePulse();
+  deactivateBar();
+  scanning = false;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CART STATE
+// ═══════════════════════════════════════════════════════════
+function addToCart(data, epc, sessId, cat) {
+  const sku  = data.sku;
+  const prod = PRODUCTS.find(p => p.sku === sku);
+  if (!cart[sku]) {
+    cart[sku] = {
+      name: data.name, price: data.price, emoji: prod?.emoji||'🛍',
+      qty: 1, cat: cat||prod?.cat||'', epcs: [epc], sessId,
+    };
+  } else {
+    cart[sku].qty = data.quantity;
+    if (!cart[sku].epcs.includes(epc)) cart[sku].epcs.push(epc);
+  }
+  renderCart();
+}
+
+function renderCart() {
+  const body  = document.getElementById('lcdBody');
+  const empty = document.getElementById('emptyState');
+  const skus  = Object.keys(cart);
+
+  if (!skus.length) {
+    empty.style.display = 'flex';
+    document.getElementById('btnCheckout').disabled = true;
+    body.querySelectorAll('.citem').forEach(r => r.remove());
+    return;
+  }
+  empty.style.display = 'none';
+  document.getElementById('btnCheckout').disabled = false;
+
+  skus.forEach(sku => {
+    const item = cart[sku];
+    let row = body.querySelector(`.citem[data-sku="${sku}"]`);
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'citem new-item';
+      row.dataset.sku = sku;
+      body.appendChild(row);
+      setTimeout(() => row.classList.remove('new-item'), 2000);
+    }
+    row.innerHTML = `
+      <div class="ci-emoji">${item.emoji}</div>
+      <div class="ci-info">
+        <div class="ci-name">${item.name}</div>
+        <div class="ci-epc">${item.epcs.slice(-1)[0]} · ×${item.qty} unit${item.qty>1?'s':''}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qbtn" onclick="removeOneEpc('${sku}')">−</button>
+        <span class="qty-num">${item.qty}</span>
+      </div>
+      <div class="ci-price">₹${(item.price*item.qty).toLocaleString('en-IN')}</div>
+      <button class="ci-del" onclick="removeAllSku('${sku}')" title="Remove all">✕</button>`;
+  });
+  body.querySelectorAll('.citem').forEach(r => { if (!cart[r.dataset.sku]) r.remove(); });
+}
+
+function setTotals(total, count) {
+  const el = document.getElementById('totalVal');
+  el.textContent = `₹${(total||0).toLocaleString('en-IN')}`;
+  el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  document.getElementById('countVal').textContent = `${count||0} item${count!==1?'s':''}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// REMOVE
+// ═══════════════════════════════════════════════════════════
+async function removeOneEpc(sku) {
+  const item = cart[sku];
+  if (!item?.epcs?.length) return;
+  const epc    = item.epcs.pop();
+  const sessId = item.sessId || getSess();
+  log('mega', `Arduino Mega  →  TAG_LOST:${epc}  (debounce timeout)`);
+  log('scan', `ESP32 Core 0  →  POST /cart/remove  { epc_id: "${epc}" }`);
+  try {
+    const res  = await fetch(`${CFG.cart}/cart/remove`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: sessId, epc_id: epc })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      log('ok', `✓ Removed ${epc} — remaining qty: ${data.remaining_qty}`);
+      if (data.remaining_qty === 0) delete cart[sku];
+      else cart[sku].qty = data.remaining_qty;
+      renderCart(); setTotals(data.cart_total, data.item_count);
+      refreshPicker();
+    } else { log('err', `✗ ${data.message}`); item.epcs.push(epc); }
+  } catch { log('err', `✗ Connection failed`); item.epcs.push(epc); }
+}
+
+async function removeAllSku(sku) {
+  const item   = cart[sku];
+  const sessId = item.sessId || getSess();
+  log('scan', `ESP32 Core 0  →  POST /cart/remove  { sku: "${sku}" }`);
+  try {
+    const res  = await fetch(`${CFG.cart}/cart/remove`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: sessId, sku })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      log('ok', `✓ Removed all ${data.units_removed} unit(s) of ${sku}`);
+      const row = document.querySelector(`.citem[data-sku="${sku}"]`);
+      if (row) { row.classList.add('removing'); setTimeout(() => row.remove(), 310); }
+      delete cart[sku];
+      setTimeout(() => { renderCart(); setTotals(data.cart_total, data.item_count); refreshPicker(); }, 320);
+      showToast(`Removed: ${item.name.slice(0,24)}`, 'inf');
+    } else { log('err', `✗ ${data.message}`); }
+  } catch { log('err', `✗ Connection failed`); }
+}
+
+async function clearCart() {
+  const sessId = getSess();
+  log('scan', `ESP32  →  DELETE /cart/${sessId}`);
+  try {
+    const res = await fetch(`${CFG.cart}/cart/${sessId}`, { method:'DELETE' });
+    const d   = await res.json();
+    if (res.ok) {
+      Object.keys(cart).forEach(k => delete cart[k]);
+      renderCart(); setTotals(0,0);
+      clearSugs(); refreshPicker();
+      lastEpcForStyle = null; selectedPickerSku = null;
+      log('ok', `✓ Cart cleared — ${sessId} reset`);
+      showToast('Cart cleared', 'inf');
+    }
+  } catch { log('err', `✗ Connection failed`); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHECKOUT
+// ═══════════════════════════════════════════════════════════
+async function openCheckout() {
+  const sessId = getSess();
+  log('scan', `ESP32  →  GET /cart/${sessId}/summary`);
+  try {
+    const res  = await fetch(`${CFG.cart}/cart/${sessId}/summary`);
+    const data = await res.json();
+    if (!res.ok) { showToast('Cart is empty', 'wrn'); return; }
+    document.getElementById('coItems').innerHTML = data.items.map(i => `
+      <div class="co-line">
+        <span>${i.name} <span style="color:var(--txt3)">×${i.quantity}</span></span>
+        <span style="font-family:var(--f-tech)">₹${i.line_total.toLocaleString('en-IN')}</span>
+      </div>`).join('');
+    document.getElementById('coTotal').textContent = `₹${data.cart_total.toLocaleString('en-IN')}`;
+    document.getElementById('coOverlay').classList.add('open');
+    log('ok', `✓ Summary: ${data.item_count} items · ₹${data.cart_total}`);
+  } catch { log('err', `✗ Connection failed`); }
+}
+
+async function closeCheckout() {
+  document.getElementById('coOverlay').classList.remove('open');
+  log('ok',   `Server  →  ESP32: payment_success_token`);
+  log('mega', `ESP32  →  Arduino Mega: UNLOCK`);
+  await clearCart();
+  showToast('✓ Payment success — cart unlocked!', 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CART PICKER — refreshed after every scan/remove
+// ═══════════════════════════════════════════════════════════
+function refreshPicker() {
+  // Build lists from in-memory cart state (no server call needed here)
+  const topItems = [];
+  const botItems = [];
+  Object.entries(cart).forEach(([sku, item]) => {
+    const prod = PRODUCTS.find(p => p.sku === sku);
+    const entry = { sku, name:item.name, emoji:prod?.emoji||'🛍', type:prod?.type||'', epc: item.epcs[0] };
+    if (item.cat === 'Topwear')    topItems.push(entry);
+    if (item.cat === 'Bottomwear') botItems.push(entry);
+  });
+
+  renderPickerSection('pickerTop', topItems, 'top',
+    topItems.length ? null : 'Add topwear to cart first');
+  renderPickerSection('pickerBot', botItems, 'bot',
+    botItems.length ? null : 'Add bottomwear to cart first');
+
+  const hasWearable = topItems.length > 0 || botItems.length > 0;
+  const selExists   = selectedPickerSku && cart[selectedPickerSku];
+
+  // If selected item was removed, reset
+  if (selectedPickerSku && !cart[selectedPickerSku]) {
+    selectedPickerSku = null;
+    document.getElementById('pickerStatus').textContent = 'Select an item below';
+  }
+
+  document.getElementById('btnOutfit').disabled   = !selExists;
+  document.getElementById('btnFootwear').disabled  = !hasWearable;
+}
+
+function renderPickerSection(containerId, items, catClass, emptyMsg) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (!items.length || emptyMsg) {
+    container.innerHTML = `<div class="empty-picker">${emptyMsg || 'Empty'}</div>`;
+    return;
+  }
+  items.forEach(item => {
+    const d = document.createElement('div');
+    d.className = `picker-item${selectedPickerSku === item.sku ? ' selected' : ''}`;
+    d.innerHTML = `
+      <div class="pi-emoji">${item.emoji}</div>
+      <div class="pi-info">
+        <div class="pi-name">${item.name}</div>
+        <div class="pi-meta">${item.type} · ${item.epc}</div>
+      </div>
+      <div class="pi-cat ${catClass}">${catClass === 'top' ? 'Top' : 'Bottom'}</div>`;
+    d.onclick = () => selectPickerItem(item.sku);
+    container.appendChild(d);
+  });
+}
+
+function selectPickerItem(sku) {
+  selectedPickerSku = sku;
+  const item = cart[sku];
+  const prod = PRODUCTS.find(p => p.sku === sku);
+  const nm   = item.name.length > 22 ? item.name.slice(0,22)+'…' : item.name;
+  document.getElementById('pickerStatus').textContent = nm;
+  document.getElementById('btnOutfit').disabled = false;
+  refreshPicker();
+  log('scan', `ESP32 Core 1  →  Customer selected "${item.name}" for styling`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FACIAL HEX
+// ═══════════════════════════════════════════════════════════
+function onHexChange(val) {
+  curHex = val;
+  document.getElementById('hexInput').value   = val;
+  document.getElementById('hexPreview').style.background = val;
+  document.getElementById('undertoneLbl').textContent = '—';
+  document.getElementById('undertoneLbl').classList.remove('resolved');
+}
+
+function onHexTextChange(val) {
+  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+    curHex = val;
+    document.getElementById('hexPicker').value = val;
+    document.getElementById('hexPreview').style.background = val;
+    document.getElementById('undertoneLbl').textContent = '—';
+    document.getElementById('undertoneLbl').classList.remove('resolved');
+  }
+}
+
+async function classifyHex() {
+  const hex = curHex;
+  log('face', `POST /api/classify_hex  { hex: "${hex}" }`);
+  try {
+    const res  = await fetch(`${CFG.style}/api/classify_hex`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hex })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      const chip = document.getElementById('undertoneLbl');
+      chip.textContent = data.undertone_label;
+      chip.classList.add('resolved');
+      log('face', `✓ ${hex}  →  ${data.undertone_label}  (H:${data.hsl.h} S:${data.hsl.s} L:${data.hsl.l})`);
+      showToast(`Undertone: ${data.undertone_label}`, 'inf');
+    } else {
+      log('err', `✗ Classify hex failed: ${data.message}`);
+    }
+  } catch { log('err', `✗ Styling engine unreachable`); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// OUTFIT SUGGESTIONS → POST /api/get_style
+// ═══════════════════════════════════════════════════════════
+async function callOutfit() {
+  if (!selectedPickerSku || !cart[selectedPickerSku]) {
+    showToast('Select a cart item first', 'wrn'); return;
+  }
+  const item   = cart[selectedPickerSku];
+  const epc    = item.epcs[0];
+  const style  = document.getElementById('selStyle').value;
+  const hex    = curHex;
+
+  const btn = document.getElementById('btnOutfit');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'Styling…';
+  clearSugs();
+
+  log('sep', '─'.repeat(42));
+  log('ai',  `ESP32 Core 1  →  Customer tapped "Style Me"`);
+  log('ai',  `ESP32 Core 0  →  POST /api/get_style`);
+  log('ai',  `  { epc_id: "${epc}", user_style: "${style}", facial_hex: "${hex}" }`);
+  log('face', `Facial hex ${hex} will drive stage ⑤ scoring (+0..40 pts)`);
+
+  try {
+    const res  = await fetch(`${CFG.style}/api/get_style`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ epc_id: epc, user_style: style, facial_hex: hex })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      log('err', `✗ ${data.message}`);
+      showToast('Styling engine error', 'err');
+    } else {
+      const chip = document.getElementById('undertoneLbl');
+      chip.textContent = data.undertone_label;
+      chip.classList.add('resolved');
+      log('face', `✓ Undertone resolved: ${data.undertone_label}`);
+      log('ai',   `✓ ${data.suggestions?.length} suggestion(s) for ${data.cart_item?.name}`);
+      data.suggestions?.forEach(s =>
+        log('ai', `  #${s.rank} ${s.name}  total:${s._score}  facial:${s.facial_score}`));
+      renderSugs(data.suggestions, data.cart_item, data.undertone_label, 'outfit');
+      showToast(`${data.suggestions?.length} outfit suggestions ready`, 'inf');
+    }
+  } catch {
+    log('err', `✗ Styling engine unreachable — ${CFG.style}`);
+    showToast('Styling engine unreachable', 'err');
+  }
+
+  btn.classList.remove('loading');
+  btn.textContent = '✦ Style Me';
+  btn.disabled = !selectedPickerSku || !cart[selectedPickerSku];
+}
+
+// ═══════════════════════════════════════════════════════════
+// FOOTWEAR SUGGESTIONS → POST /api/suggest_footwear
+// ═══════════════════════════════════════════════════════════
+async function callFootwear() {
+  // Use selected item's EPC if available, else first top/bottom in cart
+  let epc = null;
+  if (selectedPickerSku && cart[selectedPickerSku]) {
+    epc = cart[selectedPickerSku].epcs[0];
+  } else {
+    const firstWearable = Object.values(cart).find(
+      i => i.cat === 'Topwear' || i.cat === 'Bottomwear'
+    );
+    if (!firstWearable) { showToast('Add a garment to cart first', 'wrn'); return; }
+    epc = firstWearable.epcs[0];
+  }
+
+  const style = document.getElementById('selStyle').value;
+  const hex   = curHex;
+
+  const btn = document.getElementById('btnFootwear');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'Scanning…';
+  clearSugs();
+
+  log('sep', '─'.repeat(42));
+  log('ai',  `ESP32 Core 1  →  Customer tapped "Suggest Footwear"`);
+  log('ai',  `ESP32 Core 0  →  POST /api/suggest_footwear`);
+  log('ai',  `  { epc_id: "${epc}", user_style: "${style}", facial_hex: "${hex}" }`);
+  log('face', `Facial hex ${hex} will drive stage ⑤ scoring (+0..40 pts)`);
+
+  try {
+    const res  = await fetch(`${CFG.style}/api/suggest_footwear`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ epc_id: epc, user_style: style, facial_hex: hex })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      log('err', `✗ ${data.message}`);
+      showToast('Styling engine error', 'err');
+    } else {
+      const chip = document.getElementById('undertoneLbl');
+      chip.textContent = data.undertone_label;
+      chip.classList.add('resolved');
+      log('face', `✓ Undertone resolved: ${data.undertone_label}`);
+      log('ai',   `✓ ${data.suggestions?.length} footwear suggestion(s)`);
+      data.suggestions?.forEach(s =>
+        log('ai', `  #${s.rank} ${s.name}  total:${s._score}  facial:${s.facial_score}`));
+      renderSugs(data.suggestions, data.cart_item, data.undertone_label, 'footwear');
+      showToast(`${data.suggestions?.length} footwear suggestions ready`, 'inf');
+    }
+  } catch {
+    log('err', `✗ Styling engine unreachable — ${CFG.style}`);
+    showToast('Styling engine unreachable', 'err');
+  }
+
+  btn.classList.remove('loading');
+  btn.textContent = '👟 Footwear';
+  btn.disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER SUGGESTIONS
+// ═══════════════════════════════════════════════════════════
+function renderSugs(sugs, cartItem, undertone, mode) {
+  const panel = document.getElementById('sugsPanel');
+  panel.innerHTML = '';
+  if (!sugs?.length) return;
+
+  // Mode header
+  const hdr = document.createElement('div');
+  hdr.className = 'sug-mode-lbl';
+  hdr.innerHTML = `<span>AI picks for "${(cartItem?.name||'item').slice(0,20)}"</span>
+    <span class="sug-mode-badge ${mode}">${mode === 'outfit' ? '✦ Outfit' : '👟 Footwear'}</span>`;
+  panel.appendChild(hdr);
+
+  // Undertone chip
+  const uc = document.createElement('div');
+  uc.className = 'sug-undertone';
+  uc.textContent = `🎨 Undertone: ${undertone}  ·  Facial hex driving top-scoring`;
+  panel.appendChild(uc);
+
+  sugs.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'sug-card';
+    card.style.animationDelay = `${i * 0.1}s`;
+    card.innerHTML = `
+      <div class="sug-rank">#${s.rank}</div>
+      <div class="sug-info">
+        <div class="sug-name">${s.name}</div>
+        <div class="sug-reason">${s.match_reason||''}</div>
+        <div class="sug-price">₹${s.price?.toLocaleString('en-IN')||'—'} · ${s.garment_type||''} · ${s.color_family||''}</div>
+      </div>
+      <div class="sug-scores">
+        <div class="sug-total">+${s._score}</div>
+        <div class="sug-face">👤+${s.facial_score||0}</div>
+      </div>`;
+    panel.appendChild(card);
+  });
+  panel.classList.add('show');
+}
+
+function clearSugs() {
+  const p = document.getElementById('sugsPanel');
+  p.innerHTML = '';
+  p.classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SERVER STATUS
+// ═══════════════════════════════════════════════════════════
+async function checkServers() {
+  for (const [url, dotId] of [[CFG.cart,'dotCart'],[CFG.style,'dotStyle']]) {
+    const dot = document.getElementById(dotId);
+    dot.className = 'dot chk';
+    try {
+      const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(3000) });
+      dot.className = r.ok ? 'dot on' : 'dot off';
+    } catch { dot.className = 'dot off'; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIG MODAL
+// ═══════════════════════════════════════════════════════════
+function openCfg()  { document.getElementById('cfgOverlay').classList.add('open'); }
+function closeCfg() { document.getElementById('cfgOverlay').classList.remove('open'); }
+
+async function testServers() {
+  const cartUrl  = document.getElementById('cfgCart').value.trim();
+  const styleUrl = document.getElementById('cfgStyle').value.trim();
+  const st = document.getElementById('mStatus');
+  st.className = 'm-status'; st.textContent = 'Testing…'; st.style.display = 'block';
+  const results = [];
+  for (const [lbl, url] of [['Cart Handler',cartUrl],['Styling Engine',styleUrl]]) {
+    try {
+      const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(3000) });
+      results.push(`${r.ok?'✓':'✗'} ${lbl}: ${r.ok?'OK':r.status}`);
+    } catch { results.push(`✗ ${lbl}: unreachable`); }
+  }
+  const ok = results.every(r => r.startsWith('✓'));
+  st.className = `m-status ${ok?'ok':'fail'}`;
+  st.textContent = results.join('   |   ');
+}
+
+function saveCfg() {
+  CFG.cart  = document.getElementById('cfgCart').value.trim();
+  CFG.style = document.getElementById('cfgStyle').value.trim();
+  closeCfg(); checkServers();
+  log('info', `Config updated — cart:${CFG.cart}  style:${CFG.style}`);
+  showToast('Config saved', 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// VISUAL EFFECTS
+// ═══════════════════════════════════════════════════════════
+function showPulse(msg)  { document.getElementById('pulseText').textContent = msg; document.getElementById('scanPulse').classList.add('show'); }
+function hidePulse()     { document.getElementById('scanPulse').classList.remove('show'); }
+function activateBar()   { document.getElementById('scanBar').classList.add('go'); }
+function deactivateBar() { setTimeout(() => document.getElementById('scanBar').classList.remove('go'), 400); }
+
+// ═══════════════════════════════════════════════════════════
+// CONSOLE
+// ═══════════════════════════════════════════════════════════
+function log(type, msg) {
+  const c   = document.getElementById('console');
+  const now = new Date();
+  const t   = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const icons = {info:'›',ok:'✓',err:'✗',warn:'⚠',ai:'⚡',face:'👤',scan:'→',mega:'⬡',sep:''};
+  const el  = document.createElement('div');
+  el.className = `lg ${type}`;
+  el.innerHTML = `<span class="lt">${t}</span><span class="li">${icons[type]||'›'}</span><span class="lm">${msg}</span>`;
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+  while (c.children.length > 400) c.removeChild(c.firstChild);
+}
+function clrLog() { document.getElementById('console').innerHTML = ''; }
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function showToast(msg, type='inf') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3300);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function getSess()     { return document.getElementById('sessId').value.trim() || 'CART-001'; }
+function onSessChange(){ document.getElementById('cartChip').textContent = getSess(); }
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+buildShelf();
+checkServers();
+setInterval(checkServers, 12000);
+
+log('sep',  '═'.repeat(42));
+log('info', 'Innocart Hardware Simulator  v3.0  (Facial Hex Edition)');
+log('info', `Cart Handler   →  ${CFG.cart}`);
+log('info', `Style Engine   →  ${CFG.style}`);
+log('sep',  '─'.repeat(42));
+log('info', '① Click shelf items to scan RFID tags');
+log('info', '② Set facial hex (#RRGGBB) from mobile app');
+log('info', '③ Pick a top/bottom item in the picker');
+log('info', '④ Tap "Style Me" (outfit) or "Footwear"');
+log('face', 'Facial hex drives the highest-weight scoring stage (+40 pts)');
+log('sep',  '─'.repeat(42));
+</script>
+
+
+</body></html>

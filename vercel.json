@@ -1,0 +1,12 @@
+{
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "mobile": {
+      "root": "mobile",
+      "framework": "vite"
+    }
+  }
+}

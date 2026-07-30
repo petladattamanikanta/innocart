@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #080810;
+  color: #FFFFFF;
+  font-family: 'Exo 2', sans-serif;
+  user-select: none;
+}
+
+/* Custom Overrides for html5-qrcode video element */
+#reader-container {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#reader-container video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 20px !important;
+}
+
+#reader-container img,
+#reader-container #reader-container__scan_region img,
+#reader-container div[style*="border"] {
+  display: none !important;
+}
+
+/* Laser scan animation */
+@keyframes scan-laser {
+  0% { top: 12px; opacity: 1; }
+  50% { top: calc(100% - 12px); opacity: 0.8; }
+  100% { top: 12px; opacity: 1; }
+}
+
+.animate-scan-laser {
+  animation: scan-laser 2.2s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s infinite ease-in-out;
+}

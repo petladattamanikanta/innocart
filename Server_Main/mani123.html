@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p id="para">mani teja</p>
+    <button id="btn">add element</button>
+    <script>
+       let para1 = document.getElementById("para");
+       let btn1 = document.getElementById("btn");
+       para1.addEventListener("click",colorChange);
+       //btn1.addEventListener("click",append);
+       function colorChange(){
+       document.getElementById("para").style.color = "orange";
+       }
+       btn1.onclick = function (){
+        let p = document.createElement("p");
+        p.innerHTML = "element created";
+        p.style.backgroundColor = "green";
+        p.style.fontSize = "80 px";
+        document.body.append(p);
+       }
+    </script>
+</body>
+</html>

@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InnoCart V2 — UHF RFID Hardware & Cavity Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Outfit:wght@500;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #060810; --bg1: #0C0F18; --bg2: #111520; --bg3: #171C2A; --bg4: #1D2335;
+    --b1: #1E2638;  --b2: #28334A;  --b3: #344060;
+    --txt: #D8E4FF; --txt2: #8B9DC3; --txt3: #4A587A;
+    --blue: #4D8BFF; --cyan: #00D4FF; --green: #00FF88; --orange: #FF9500; --red: #FF3B5C; --purple: #B44DFF;
+    --f-head: 'Outfit', sans-serif;
+    --f-mono: 'IBM Plex Mono', monospace;
+    --f-tech: 'Share Tech Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg0);
+    color: var(--txt);
+    font-family: var(--f-head);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--bg1);
+    border-bottom: 1px solid var(--b2);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 52px;
+    flex-shrink: 0;
+  }
+  .logo-group { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .badge {
+    font-family: var(--f-tech);
+    font-size: 10px;
+    color: var(--cyan);
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .controls-group { display: flex; align-items: center; gap: 12px; }
+  .select-box, .input-box {
+    background: var(--bg2);
+    border: 1px solid var(--b2);
+    color: var(--cyan);
+    font-family: var(--f-tech);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    outline: none;
+  }
+  .btn {
+    background: linear-gradient(135deg, var(--blue), #2563EB);
+    color: #fff;
+    border: 1px solid rgba(77,139,255,0.3);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--f-tech);
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(77,139,255,0.3); }
+  .btn-danger { background: linear-gradient(135deg, var(--red), #CC002B); border-color: rgba(255,59,92,0.3); }
+
+  /* MAIN LAYOUT */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    overflow: hidden;
+  }
+
+  /* LEFT CATALOGUE PANEL */
+  .panel-left {
+    background: var(--bg1);
+    border-right: 1px solid var(--b1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--b1);
+    background: var(--bg2);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .panel-title-row { display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 14px; font-weight: 700; color: #fff; }
+  .panel-sub { font-family: var(--f-tech); font-size: 10px; color: var(--txt3); }
+
+  /* FILTER BARS */
+  .style-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+  .style-btn {
+    font-family: var(--f-tech);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--b2);
+    background: var(--bg0);
+    color: var(--txt2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .style-btn:hover, .style-btn.active { background: rgba(0,212,255,0.15); border-color: var(--cyan); color: var(--cyan); }
+
+  .cat-bar { display: flex; gap: 6px; align-items: center; }
+  .search-input {
+    flex: 1;
+    background: var(--bg0);
+    border: 1px solid var(--b2);
+    color: #fff;
+    font-family: var(--f-tech);
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .catalog-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .catalog-list::-webkit-scrollbar { width: 4px; }
+  .catalog-list::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 2px; }
+
+  .item-card {
+    background: var(--bg2);
+    border: 1px solid var(--b1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .item-card:hover { border-color: var(--cyan); background: var(--bg3); }
+  .color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  }
+  .item-info { flex: 1; min-width: 0; }
+  .item-title-row { display: flex; align-items: center; gap: 6px; }
+  .item-name { font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .style-tag {
+    font-family: var(--f-tech);
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(180,77,255,0.15);
+    color: var(--purple);
+    border: 1px solid rgba(180,77,255,0.3);
+  }
+  .item-meta { font-family: var(--f-tech); font-size: 9px; color: var(--txt3); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .pattern-tag { color: var(--orange); }
+  .epc-tag { color: var(--cyan); }
+
+  .item-price { font-family: var(--f-head); font-size: 13px; font-weight: 700; color: var(--cyan); flex-shrink: 0; }
+  .actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .btn-action {
+    font-family: var(--f-tech);
+    font-size: 9px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.15s;
+  }
+  .btn-drop { background: var(--green); color: #000; }
+  .btn-drop:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(0,255,136,0.4); }
+  .btn-remove { background: rgba(255,59,92,0.15); color: var(--red); border: 1px solid rgba(255,59,92,0.3); }
+  .btn-remove:hover { background: rgba(255,59,92,0.3); }
+
+  /* RIGHT PANEL: KIOSK TOUCHSCREEN & TERMINAL CONSOLE */
+  .panel-right {
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 14px;
+    gap: 12px;
+  }
+  .status-bar {
+    background: var(--bg2);
+    border: 1px solid var(--b2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .status-item { display: flex; align-items: center; gap: 8px; font-family: var(--f-tech); font-size: 10px; color: var(--txt2); }
+  .dot-green { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  /* AI STYLING KIOSK CARD */
+  .ai-kiosk-card {
+    background: #0B0E17;
+    border: 1px solid var(--b2);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+  .kiosk-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .kiosk-label { font-family: var(--f-tech); font-size: 10px; color: var(--txt3); letter-spacing: 1px; width: 90px; }
+  .kiosk-input {
+    flex: 1;
+    background: #111624;
+    border: 1px solid var(--b2);
+    color: var(--cyan);
+    font-family: var(--f-mono);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    outline: none;
+  }
+  .hex-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+  }
+  .btn-classify {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(255,59,92,0.15), rgba(180,77,255,0.25));
+    border: 1px solid rgba(255,59,92,0.4);
+    color: var(--red);
+    font-family: var(--f-tech);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .btn-classify:hover { background: rgba(255,59,92,0.3); color: #fff; }
+
+  .ai-companion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--b1);
+    padding-bottom: 6px;
+  }
+  .ai-title { font-family: var(--f-tech); font-size: 11px; color: var(--purple); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+  .slot-box {
+    border: 1px dashed var(--b2);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    background: rgba(17,21,32,0.4);
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .slot-empty { font-family: var(--f-tech); font-size: 11px; color: var(--txt3); }
+  .slot-active { border-style: solid; border-color: var(--cyan); background: rgba(0,212,255,0.06); text-align: left; justify-content: space-between; width: 100%; }
+  .slot-rec { border-style: solid; border-color: var(--orange); background: rgba(255,149,0,0.08); text-align: left; justify-content: space-between; width: 100%; }
+
+  .kiosk-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .btn-style-me {
+    background: rgba(180,77,255,0.15);
+    border: 1px solid var(--purple);
+    color: var(--purple);
+    font-family: var(--f-tech);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-style-me:hover { background: var(--purple); color: #fff; box-shadow: 0 0 15px rgba(180,77,255,0.4); }
+
+  .btn-footwear {
+    background: rgba(0,212,255,0.15);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--f-tech);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-footwear:hover { background: var(--cyan); color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
+
+  .btn-acc {
+    background: rgba(255,149,0,0.15);
+    border: 1px solid var(--orange);
+    color: var(--orange);
+    font-family: var(--f-tech);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-acc:hover { background: var(--orange); color: #000; box-shadow: 0 0 15px rgba(255,149,0,0.4); }
+
+  .console-box {
+    background: #05070A;
+    border: 1px solid var(--b2);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: #00FF88;
+    max-height: 180px;
+    overflow-y: auto;
+    line-height: 1.5;
+  }
+  .log-line { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 2px 0; }
+  .log-err { color: var(--red); }
+  .log-succ { color: var(--cyan); }
+  .log-warn { color: var(--orange); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-group">
+    <div class="logo">INNOCART</div>
+    <div class="badge">UHF RFID Hardware & Cavity Simulator v2.0</div>
+  </div>
+
+  <div class="controls-group">
+    <label style="font-family:var(--f-tech);font-size:10px;color:var(--txt3)">TARGET BACKEND:</label>
+    <input type="text" id="backend-target" class="input-box" value="https://innocart-backend.onrender.com" style="width:280px;" placeholder="https://your-backend.onrender.com">
+
+    <label style="font-family:var(--f-tech);font-size:10px;color:var(--txt3)">SESSION ID:</label>
+    <input type="text" id="session-id" class="input-box" value="IC-042" style="width:80px;text-align:center" onchange="syncAiKioskState()">
+
+    <button class="btn" onclick="bulkDropAll()">⚡ Bulk Drop All</button>
+    <button class="btn btn-danger" onclick="clearCartSession()">🧹 Clear Cart</button>
+  </div>
+</div>
+
+<!-- MAIN WORKSPACE -->
+<div class="main">
+  <!-- LEFT PANEL: MASTER PRODUCT CATALOGUE & STYLE FILTERS -->
+  <div class="panel-left">
+    <div class="panel-header">
+      <div class="panel-title-row">
+        <div class="panel-title">Master Garment Table (30 Products)</div>
+        <div id="item-count-badge" class="panel-sub">Showing 30 items</div>
+      </div>
+
+      <!-- Style Filter Bar -->
+      <div class="style-bar">
+        <button class="style-btn active" onclick="filterStyle('ALL', this)">ALL STYLES</button>
+        <button class="style-btn" onclick="filterStyle('Streetwear', this)">STREETWEAR</button>
+        <button class="style-btn" onclick="filterStyle('Ethnic Wear', this)">ETHNIC WEAR</button>
+        <button class="style-btn" onclick="filterStyle('Sports Wear', this)">SPORTS WEAR</button>
+        <button class="style-btn" onclick="filterStyle('Casual', this)">CASUAL</button>
+        <button class="style-btn" onclick="filterStyle('Formal', this)">FORMAL</button>
+      </div>
+
+      <!-- Category & Search Bar -->
+      <div class="cat-bar">
+        <select id="category-filter" class="select-box" style="padding:4px 8px;font-size:10px;" onchange="renderCatalog()">
+          <option value="ALL" selected>All Categories (Top/Bottom/Footwear/Accessory)</option>
+          <option value="Topwear">Topwear</option>
+          <option value="Bottomwear">Bottomwear</option>
+          <option value="Footwear">Footwear</option>
+          <option value="Accessories">Accessories</option>
+        </select>
+        <input type="text" id="search-input" class="search-input" placeholder="Search Name, EPC ID, Pattern..." oninput="renderCatalog()">
+      </div>
+    </div>
+
+    <!-- Product Card List -->
+    <div id="catalog-list" class="catalog-list"></div>
+  </div>
+
+  <!-- RIGHT PANEL: 7" TOUCHSCREEN AI STYLING KIOSK & CONSOLE -->
+  <div class="panel-right">
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="dot-green"></div>
+        <span>IMPINJ E710 4-ANTENNA READER ACTIVE</span>
+      </div>
+      <div class="status-item">
+        <span>POWER: 30 dBm</span> &nbsp;·&nbsp;
+        <span>FREQ: 865-868 MHz</span>
+      </div>
+    </div>
+
+    <!-- 7" KIOSK AI STYLING COMPANION CARD -->
+    <div class="ai-kiosk-card">
+      <div class="kiosk-row">
+        <span class="kiosk-label">CART ID</span>
+        <input type="text" id="kiosk-cart-id" class="kiosk-input" value="IC-042" readonly>
+      </div>
+
+      <div class="kiosk-row">
+        <span class="kiosk-label">FACIAL HEX</span>
+        <div id="facial-hex-swatch" class="hex-swatch" style="background:#C8A882"></div>
+        <input type="text" id="facial-hex-input" class="kiosk-input" value="#C8A882" onchange="updateHexSwatch(this.value)">
+      </div>
+
+      <button class="btn-classify" onclick="classifyFacialHex()">CLASSIFY HEX →</button>
+
+      <div class="kiosk-row">
+        <span class="kiosk-label">STYLE</span>
+        <select id="user-style-select" class="kiosk-input" onchange="syncAiKioskState()">
+          <option value="Streetwear">Streetwear</option>
+          <option value="Ethnic Wear">Ethnic Wear</option>
+          <option value="Sports Wear">Sports Wear</option>
+          <option value="Casual">Casual</option>
+          <option value="Formal">Formal</option>
+        </select>
+      </div>
+
+      <!-- AI STYLE COMPANION SLOT AREA -->
+      <div class="ai-companion-header">
+        <span class="ai-title">⚡ AI STYLE COMPANION</span>
+        <span id="undertone-badge" style="font-family:var(--f-tech);font-size:9px;color:var(--cyan)">Warm-Golden</span>
+      </div>
+
+      <div style="font-family:var(--f-tech);font-size:9px;color:var(--txt3);">TOPWEAR IN CART</div>
+      <div id="topwear-slot" class="slot-box">
+        <span class="slot-empty">Add topwear to cart first</span>
+      </div>
+
+      <div style="font-family:var(--f-tech);font-size:9px;color:var(--txt3);">BOTTOMWEAR IN CART</div>
+      <div id="bottomwear-slot" class="slot-box">
+        <span class="slot-empty">Add bottomwear to cart first</span>
+      </div>
+
+      <!-- KIOSK BUTTONS -->
+      <div class="kiosk-btn-group">
+        <button class="btn-style-me" onclick="triggerAiStyleMe()">✦ STYLE ME</button>
+        <button class="btn-footwear" onclick="triggerAiFootwear()">👟 FOOTWEAR</button>
+        <button class="btn-acc" onclick="triggerAiAccessories()">🎩 ACCESSORIES</button>
+      </div>
+    </div>
+
+    <!-- TERMINAL LOG CONSOLE -->
+    <div id="console" class="console-box">
+      <div class="log-line log-succ">[INIT] InnoCart Master Product Database (30 Products) Connected.</div>
+      <div class="log-line">[SYS] Database 'product_master' and 'inventory_live' ready for tag drops.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 30 Master Products Array
+const MASTER_PRODUCTS = [
+  { epc: "E280110C", sku: "SKU-KRT-01", name: "Men's Slim Kurta — Blue", price: 799, cat: "Topwear", style: "Ethnic Wear", hex: "#1A73E8", pattern: "Solid" },
+  { epc: "E280110D", sku: "SKU-TRS-02", name: "Chino Trousers — Khaki", price: 1199, cat: "Bottomwear", style: "Casual", hex: "#795548", pattern: "Solid" },
+  { epc: "E280110E", sku: "SKU-SHT-03", name: "Cotton Casual Shirt — White", price: 649, cat: "Topwear", style: "Casual", hex: "#F5F5F5", pattern: "Solid" },
+  { epc: "E280110F", sku: "SKU-SRT-04", name: "Cargo Shorts — Olive Green", price: 899, cat: "Bottomwear", style: "Streetwear", hex: "#388E3C", pattern: "Camouflage" },
+  { epc: "E280110G", sku: "SKU-JKT-05", name: "Classic Denim Jacket — Indigo", price: 1999, cat: "Topwear", style: "Streetwear", hex: "#1A1AFF", pattern: "Solid" },
+  { epc: "E280110H", sku: "SKU-SNK-06", name: "White Minimal Sneakers", price: 1499, cat: "Footwear", style: "Casual", hex: "#FFFFFF", pattern: "Solid" },
+  { epc: "E280110I", sku: "SKU-HD-01", name: "Void Black Oversized Hoodie", price: 2499, cat: "Topwear", style: "Streetwear", hex: "#111116", pattern: "Graphic Print" },
+  { epc: "E280110J", sku: "SKU-JOG-04", name: "Matte Black Slim Joggers", price: 1599, cat: "Bottomwear", style: "Streetwear", hex: "#1C1C1E", pattern: "Solid" },
+  { epc: "E280110K", sku: "SKU-KRT-02", name: "Ember Maroon Linen Kurta", price: 1799, cat: "Topwear", style: "Ethnic Wear", hex: "#800020", pattern: "Textured Woven" },
+  { epc: "E280110L", sku: "SKU-SHR-01", name: "Royal Silk Sherwani — Cream", price: 4999, cat: "Topwear", style: "Ethnic Wear", hex: "#FFFDD0", pattern: "Floral Embroidered" },
+  { epc: "E280110M", sku: "SKU-MOJ-01", name: "Gold Embroidered Mojari Shoes", price: 1899, cat: "Footwear", style: "Ethnic Wear", hex: "#FFD700", pattern: "Embroidered" },
+  { epc: "E280110N", sku: "SKU-TEE-02", name: "Compression Dri-FIT Tee — Cyan", price: 1299, cat: "Topwear", style: "Sports Wear", hex: "#00F5FF", pattern: "Color-Blocked" },
+  { epc: "E280110O", sku: "SKU-SRT-02", name: "Athletic Running Shorts — Red", price: 999, cat: "Bottomwear", style: "Sports Wear", hex: "#FF3B30", pattern: "Solid" },
+  { epc: "E280110P", sku: "SKU-TRN-01", name: "Performance Pro Trainers — Green", price: 3299, cat: "Footwear", style: "Sports Wear", hex: "#00E676", pattern: "Mesh Textured" },
+  { epc: "E280110Q", sku: "SKU-SHT-04", name: "Oxford Gingham Check Shirt", price: 1299, cat: "Topwear", style: "Casual", hex: "#00C4CC", pattern: "Checkered" },
+  { epc: "E280110R", sku: "SKU-BLZ-01", name: "Italian Cut Blazer — Charcoal", price: 3999, cat: "Topwear", style: "Formal", hex: "#2E2E34", pattern: "Solid" },
+  { epc: "E280110S", sku: "SKU-TRS-03", name: "Tailored Formal Dress Trousers", price: 1899, cat: "Bottomwear", style: "Formal", hex: "#0D0D0D", pattern: "Pinstripe" },
+  { epc: "E280110T", sku: "SKU-OXF-01", name: "Classic Leather Oxfords — Brown", price: 3499, cat: "Footwear", style: "Formal", hex: "#4A2E16", pattern: "Smooth Leather" },
+  { epc: "E280110U", sku: "SKU-HAT-01", name: "Streetwear Canvas Bucket Hat", price: 499, cat: "Accessories", style: "Streetwear", hex: "#FFB300", pattern: "Embroidered Logo" },
+  { epc: "E280110V", sku: "SKU-ACC-02", name: "Aviator Gold Sunglasses", price: 1199, cat: "Accessories", style: "Casual", hex: "#FFD700", pattern: "Tinted Lens" },
+  { epc: "E280110W", sku: "SKU-NHR-01", name: "Handloom Nehru Jacket — Ochre", price: 2199, cat: "Topwear", style: "Ethnic Wear", hex: "#CC7722", pattern: "Woven Texture" },
+  { epc: "E280110X", sku: "SKU-ANK-01", name: "Anarkali Kurti & Dupatta Set", price: 2799, cat: "Topwear", style: "Ethnic Wear", hex: "#FF69B4", pattern: "Gota Patti Work" },
+  { epc: "E280110Y", sku: "SKU-SPO-01", name: "High-Impact Sports Bra & Leggings", price: 1999, cat: "Bottomwear", style: "Sports Wear", hex: "#8A2BE2", pattern: "Color-Blocked" },
+  { epc: "E280110Z", sku: "SKU-TRK-01", name: "Zip Track Jacket — Navy Blue", price: 2299, cat: "Topwear", style: "Sports Wear", hex: "#000080", pattern: "Striped Sleeve" },
+  { epc: "E280111A", sku: "SKU-CRG-02", name: "Tactical Cargo Pants — Black", price: 2199, cat: "Bottomwear", style: "Streetwear", hex: "#1A1A1A", pattern: "Multi-Pocket" },
+  { epc: "E280111B", sku: "SKU-SNK-02", name: "High-Top Chunky Trainers — Neon", price: 3799, cat: "Footwear", style: "Streetwear", hex: "#39FF14", pattern: "Futuristic Mesh" },
+  { epc: "E280111C", sku: "SKU-POL-01", name: "Pique Cotton Polo Tee — Burgundy", price: 999, cat: "Topwear", style: "Casual", hex: "#800020", pattern: "Solid Collar" },
+  { epc: "E280111D", sku: "SKU-LOF-01", name: "Suede Penny Loafers — Tan", price: 2899, cat: "Footwear", style: "Casual", hex: "#D2B48C", pattern: "Suede Texture" },
+  { epc: "E280111E", sku: "SKU-TIE-01", name: "Pure Silk Patterned Necktie", price: 699, cat: "Accessories", style: "Formal", hex: "#1A237E", pattern: "Jacquard Weave" },
+  { epc: "E280111F", sku: "SKU-BLZ-02", name: "Single-Breasted Velvet Tuxedo", price: 5499, cat: "Topwear", style: "Formal", hex: "#050505", pattern: "Velvet Solid" }
+];
+
+let activeStyle = "ALL";
+
+function filterStyle(style, btnEl) {
+  activeStyle = style;
+  document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("active"));
+  if (btnEl) btnEl.classList.add("active");
+  renderCatalog();
+}
+
+function renderCatalog() {
+  const catFilter = document.getElementById("category-filter").value;
+  const searchQuery = document.getElementById("search-input").value.toLowerCase().trim();
+  const container = document.getElementById("catalog-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const filtered = MASTER_PRODUCTS.filter(p => {
+    const matchStyle = (activeStyle === "ALL" || p.style === activeStyle);
+    const matchCat = (catFilter === "ALL" || p.cat === catFilter);
+    const matchSearch = !searchQuery || 
+      p.name.toLowerCase().includes(searchQuery) || 
+      p.epc.toLowerCase().includes(searchQuery) || 
+      p.pattern.toLowerCase().includes(searchQuery) ||
+      p.style.toLowerCase().includes(searchQuery);
+
+    return matchStyle && matchCat && matchSearch;
+  });
+
+  const badge = document.getElementById("item-count-badge");
+  if (badge) badge.innerText = `Showing ${filtered.length} of ${MASTER_PRODUCTS.length} items`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--txt3);font-family:var(--f-tech);font-size:11px;">No garments found matching filter criteria.</div>`;
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "item-card";
+    card.innerHTML = `
+      <div class="color-dot" style="background-color:${p.hex}"></div>
+      <div class="item-info">
+        <div class="item-title-row">
+          <div class="item-name">${p.name}</div>
+          <div class="style-tag">${p.style}</div>
+        </div>
+        <div class="item-meta">
+          <span>CAT: <strong style="color:#fff">${p.cat}</strong></span>
+          <span class="pattern-tag">PATTERN: ${p.pattern}</span>
+          <span class="epc-tag">EPC: ${p.epc}</span>
+        </div>
+      </div>
+      <div class="item-price">₹${p.price.toLocaleString('en-IN')}</div>
+      <div class="actions">
+        <button class="btn-action btn-drop" onclick="scanTag('${p.epc}')">⏬ Drop Tag</button>
+        <button class="btn-action btn-remove" onclick="removeTag('${p.epc}')">⏫ Remove</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function getTargetUrl() {
+  const val = (document.getElementById("backend-target").value || "").trim().replace(/\/$/, "");
+  if (!val) return "https://innocart-backend.onrender.com";
+  if (!val.startsWith("http://") && !val.startsWith("https://")) {
+    return `https://${val}`;
+  }
+  return val;
+}
+function getSessionId() {
+  return document.getElementById("session-id").value || "IC-042";
+}
+
+function updateHexSwatch(hex) {
+  const s = document.getElementById("facial-hex-swatch");
+  if (s) s.style.backgroundColor = hex;
+}
+
+function log(msg, type = "info") {
+  const c = document.getElementById("console");
+  if (!c) return;
+  const time = new Date().toLocaleTimeString();
+  const cls = type === "error" ? "log-err" : type === "succ" ? "log-succ" : type === "warn" ? "log-warn" : "";
+  c.innerHTML += `<div class="log-line ${cls}">[${time}] ${msg}</div>`;
+  c.scrollTop = c.scrollHeight;
+}
+
+async function classifyFacialHex() {
+  const hex = document.getElementById("facial-hex-input").value;
+  const baseUrl = getTargetUrl();
+  log(`[AI CLASSIFY] Analyzing facial skin HEX ${hex}...`);
+
+  try {
+    const res = await fetch(`${baseUrl}/api/classify_hex`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hex })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById("undertone-badge").innerText = data.undertone_label || "Warm-Golden";
+      log(`✓ [AI CLASSIFIED] Facial HEX ${hex} -> Undertone: "${data.undertone_label}"`, "succ");
+    }
+  } catch (err) {
+    log(`✗ [AI ERROR] ${err}`, "error");
+  }
+}
+
+async function syncAiKioskState() {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+  const hex = document.getElementById("facial-hex-input").value;
+  const style = document.getElementById("user-style-select").value;
+  document.getElementById("kiosk-cart-id").value = sessionId;
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/${sessionId}/ai_styling?facial_hex=${encodeURIComponent(hex)}&user_style=${encodeURIComponent(style)}`);
+    if (res.ok) {
+      const data = await res.json();
+      const topwear = data.active_topwear;
+      const bottomwear = data.active_bottomwear;
+
+      const topSlot = document.getElementById("topwear-slot");
+      const botSlot = document.getElementById("bottomwear-slot");
+
+      if (topwear) {
+        topSlot.innerHTML = `
+          <div class="slot-active">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#fff">${topwear.name}</div>
+              <div style="font-family:var(--f-tech);font-size:9px;color:var(--cyan)">SKU: ${topwear.sku} · ₹${topwear.price}</div>
+            </div>
+            <button class="btn-action btn-remove" onclick="removeTagBySku('${topwear.sku}')">✕</button>
+          </div>`;
+      } else if (data.recommended_topwear && data.recommended_topwear.length > 0) {
+        const rec = data.recommended_topwear[0];
+        topSlot.innerHTML = `
+          <div class="slot-rec">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--orange)">⭐ AI Suggestion: ${rec.name}</div>
+              <div style="font-family:var(--f-tech);font-size:9px;color:var(--txt2)">₹${rec.price} · ${rec.match_reason}</div>
+            </div>
+            <button class="btn-action btn-drop" onclick="scanSku('${rec.recommended_sku}')">➕ Add</button>
+          </div>`;
+      } else {
+        topSlot.innerHTML = `<span class="slot-empty">Add topwear to cart first</span>`;
+      }
+
+      if (bottomwear) {
+        botSlot.innerHTML = `
+          <div class="slot-active">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#fff">${bottomwear.name}</div>
+              <div style="font-family:var(--f-tech);font-size:9px;color:var(--cyan)">SKU: ${bottomwear.sku} · ₹${bottomwear.price}</div>
+            </div>
+            <button class="btn-action btn-remove" onclick="removeTagBySku('${bottomwear.sku}')">✕</button>
+          </div>`;
+      } else if (data.recommended_bottomwear && data.recommended_bottomwear.length > 0) {
+        const rec = data.recommended_bottomwear[0];
+        botSlot.innerHTML = `
+          <div class="slot-rec">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--orange)">⭐ AI Suggestion: ${rec.name}</div>
+              <div style="font-family:var(--f-tech);font-size:9px;color:var(--txt2)">₹${rec.price} · ${rec.match_reason}</div>
+            </div>
+            <button class="btn-action btn-drop" onclick="scanSku('${rec.recommended_sku}')">➕ Add</button>
+          </div>`;
+      } else {
+        botSlot.innerHTML = `<span class="slot-empty">Add bottomwear to cart first</span>`;
+      }
+    }
+  } catch (err) {
+    // Silent fail for polling
+  }
+}
+
+async function triggerAiStyleMe() {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+  const hex = document.getElementById("facial-hex-input").value;
+  const style = document.getElementById("user-style-select").value;
+
+  log(`[AI STYLING] Querying Dedicated Cart AI Styling for Session ${sessionId} | Style: ${style} | HEX: ${hex}...`);
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/${sessionId}/ai_styling?facial_hex=${encodeURIComponent(hex)}&user_style=${encodeURIComponent(style)}`);
+    const data = await res.json();
+    if (res.ok) {
+      log(`✓ [AI OUTFIT HARMONY] Match Score: ${data.outfit_match_score}% | Undertone: "${data.undertone_label}"`, "succ");
+      if (data.recommended_bottomwear && data.recommended_bottomwear.length > 0) {
+        log(`  👖 Recommended Bottomwear for Cart Topwear:`, "warn");
+        data.recommended_bottomwear.forEach(s => log(`    → ${s.name} (₹${s.price}) | ${s.match_reason}`));
+      }
+      if (data.recommended_topwear && data.recommended_topwear.length > 0) {
+        log(`  👕 Recommended Topwear for Cart Bottomwear:`, "warn");
+        data.recommended_topwear.forEach(s => log(`    → ${s.name} (₹${s.price}) | ${s.match_reason}`));
+      }
+    }
+  } catch (err) {
+    log(`✗ [AI ERROR] ${err}`, "error");
+  }
+}
+
+async function triggerAiFootwear() {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+  const hex = document.getElementById("facial-hex-input").value;
+  const style = document.getElementById("user-style-select").value;
+
+  log(`[AI FOOTWEAR] Fetching footwear recommendations for Session ${sessionId}...`);
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/${sessionId}/ai_styling?facial_hex=${encodeURIComponent(hex)}&user_style=${encodeURIComponent(style)}`);
+    const data = await res.json();
+    if (res.ok && data.recommended_footwear) {
+      log(`✓ [AI FOOTWEAR MATCH] Suggested Shoes for ${style}:`, "succ");
+      data.recommended_footwear.forEach(s => {
+        log(`  👟 ${s.name} (₹${s.price}) | ${s.match_reason}`, "warn");
+      });
+    }
+  } catch (err) {
+    log(`✗ [AI ERROR] ${err}`, "error");
+  }
+}
+
+async function triggerAiAccessories() {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+  const hex = document.getElementById("facial-hex-input").value;
+  const style = document.getElementById("user-style-select").value;
+
+  log(`[AI ACCESSORIES] Fetching accessories recommendations for Session ${sessionId}...`);
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/${sessionId}/ai_styling?facial_hex=${encodeURIComponent(hex)}&user_style=${encodeURIComponent(style)}`);
+    const data = await res.json();
+    if (res.ok && data.recommended_accessories) {
+      log(`✓ [AI ACCESSORIES MATCH] Suggested Accessories for ${style}:`, "succ");
+      data.recommended_accessories.forEach(s => {
+        log(`  🎩 ${s.name} (₹${s.price}) | ${s.match_reason}`, "warn");
+      });
+    }
+  } catch (err) {
+    log(`✗ [AI ERROR] ${err}`, "error");
+  }
+}
+
+async function scanTag(epc) {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+  const prod = MASTER_PRODUCTS.find(p => p.epc === epc);
+  const nameStr = prod ? prod.name : epc;
+
+  log(`[UHF-ANT] EPC Detected: ${epc} (${nameStr}) | RSSI: -42 dBm`);
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, epc_id: epc })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      log(`✓ [SUCCESS] Added "${data.name}" | Price: ₹${data.price} | Cart Total: ₹${data.cart_total}`, "succ");
+      syncAiKioskState();
+    } else {
+      log(`✗ [ERROR] ${data.detail || data.message}`, "error");
+    }
+  } catch (err) {
+    log(`✗ [NETWORK ERROR] ${err}`, "error");
+  }
+}
+
+async function scanSku(sku) {
+  const prod = MASTER_PRODUCTS.find(p => p.sku === sku);
+  if (prod) {
+    scanTag(prod.epc);
+  }
+}
+
+async function removeTag(epc) {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/remove`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, epc_id: epc })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      log(`✓ [SUCCESS] Removed tag ${epc}`, "warn");
+      syncAiKioskState();
+    }
+  } catch (err) {
+    log(`✗ [NETWORK ERROR] ${err}`, "error");
+  }
+}
+
+async function removeTagBySku(sku) {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/remove`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, sku: sku })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      log(`✓ [SUCCESS] Removed item ${sku} from cavity`, "warn");
+      syncAiKioskState();
+    }
+  } catch (err) {
+    log(`✗ [NETWORK ERROR] ${err}`, "error");
+  }
+}
+
+async function bulkDropAll() {
+  log(`[BULK] Simulating sequence drop of 4 garments into cavity...`, "warn");
+  const epcs = ["E280110I", "E280110L", "E280110N", "E280110R"];
+  for (const epc of epcs) {
+    await scanTag(epc);
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+
+async function clearCartSession() {
+  const baseUrl = getTargetUrl();
+  const sessionId = getSessionId();
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cart/${sessionId}`, { method: "DELETE" });
+    log(`✓ [SUCCESS] Cart Session '${sessionId}' cleared.`, "succ");
+    syncAiKioskState();
+  } catch (err) {
+    log(`✗ [NETWORK ERROR] ${err}`, "error");
+  }
+}
+
+// Initializations
+renderCatalog();
+syncAiKioskState();
+setInterval(syncAiKioskState, 2000);
+</script>
+</body>
+</html>
